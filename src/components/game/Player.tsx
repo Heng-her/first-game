@@ -323,7 +323,7 @@ function FallbackStylizedPlayer({ isMoving, isRunning, isGrounded }: PlayerProps
 
 // 4. Main Player Component
 export function Player({
-  modelUrl = '/models/test/ItEngineer.glb',
+  modelUrl = '/models/characters/ItEngineer.glb',
   ...props
 }: PlayerProps) {
   const isAvailable = useModelAvailability(modelUrl);

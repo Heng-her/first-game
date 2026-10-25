@@ -2,9 +2,6 @@ import { useState, useCallback, useMemo } from 'react';
 import { GameScene } from './components/game/GameScene';
 import { GameHUD } from './components/ui/GameHUD';
 import { MobileControls } from './components/ui/MobileControls';
-import { ModelGuideModal } from './components/ui/ModelGuideModal';
-import { AnimationTestUI } from './components/ui/AnimationTestUI';
-import { GOBKIT_CHARACTERS } from './constants/characters';
 import { useKeyboardControls } from './hooks/useKeyboardControls';
 import type { PlayerControls, PlayerState, CollectibleItem } from './types/game';
 
@@ -43,15 +40,10 @@ export default function App() {
 
   const [collectibles, setCollectibles] = useState<CollectibleItem[]>(INITIAL_COINS);
   const [cameraMode, setCameraMode] = useState<'follow' | 'orbit'>('follow');
-  const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [resetKey, setResetKey] = useState(0);
 
-  // Gobkit character & animation testing states
-  const [selectedModel, setSelectedModel] = useState<string>(GOBKIT_CHARACTERS[0].path);
-  const [activeEmote, setActiveEmote] = useState<string | null>(null);
-  const [availableAnimations, setAvailableAnimations] = useState<string[]>([]);
-  const [animationSpeed, setAnimationSpeed] = useState<number>(1.0);
-  const [isAnimationUIOpen, setIsAnimationUIOpen] = useState<boolean>(true);
+  // Active character model
+  const [selectedModel] = useState<string>('/models/characters/ItEngineer.glb');
 
   // Handle coin collection
   const handleCollectCoin = useCallback((id: string) => {
@@ -91,9 +83,6 @@ export default function App() {
         onCollectCoin={handleCollectCoin}
         cameraMode={cameraMode}
         modelUrl={selectedModel}
-        activeEmote={activeEmote}
-        animationSpeed={animationSpeed}
-        onAnimationsDiscovered={setAvailableAnimations}
       />
 
       {/* Modern Khmer Game HUD */}
@@ -104,35 +93,12 @@ export default function App() {
         cameraMode={cameraMode}
         onToggleCamera={() => setCameraMode((m) => (m === 'follow' ? 'orbit' : 'follow'))}
         onResetPosition={handleResetPosition}
-        onOpenGuide={() => setIsGuideOpen(true)}
-      />
-
-      {/* Gobkit Animation Testing UI */}
-      <AnimationTestUI
-        selectedModel={selectedModel}
-        onSelectModel={(path) => {
-          setSelectedModel(path);
-          setActiveEmote(null);
-        }}
-        activeEmote={activeEmote}
-        onPlayEmote={setActiveEmote}
-        availableAnimations={availableAnimations}
-        animationSpeed={animationSpeed}
-        onChangeSpeed={setAnimationSpeed}
-        isOpen={isAnimationUIOpen}
-        onToggleOpen={() => setIsAnimationUIOpen((prev) => !prev)}
       />
 
       {/* Mobile Touch Controls for Touch/Mobile Devices */}
       <MobileControls
         onControlChange={handleTouchControl}
         isRunning={activeControls.run}
-      />
-
-      {/* Educational 3D Model Guide Modal */}
-      <ModelGuideModal
-        isOpen={isGuideOpen}
-        onClose={() => setIsGuideOpen(false)}
       />
     </main>
   );

@@ -1,4 +1,4 @@
-import { Compass, BookOpen, RotateCcw, Video, Coins } from 'lucide-react';
+import { Compass, RotateCcw, Video, Coins } from 'lucide-react';
 import type { PlayerState } from '../../types/game';
 
 interface GameHUDProps {
@@ -8,7 +8,6 @@ interface GameHUDProps {
   cameraMode: 'follow' | 'orbit';
   onToggleCamera: () => void;
   onResetPosition: () => void;
-  onOpenGuide: () => void;
 }
 
 export function GameHUD({
@@ -18,7 +17,6 @@ export function GameHUD({
   cameraMode,
   onToggleCamera,
   onResetPosition,
-  onOpenGuide,
 }: GameHUDProps) {
   const isAllCollected = collectedCount >= totalCoins && totalCoins > 0;
 
@@ -99,28 +97,6 @@ export function GameHUD({
             </div>
           </div>
 
-          {/* Guide Button */}
-          <button
-            onClick={onOpenGuide}
-            className="glass-panel"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-              padding: '10px 14px',
-              borderRadius: 14,
-              color: '#f8fafc',
-              fontSize: 13,
-              fontWeight: 600,
-              cursor: 'pointer',
-              background: 'rgba(245, 158, 11, 0.2)',
-              border: '1px solid rgba(245, 158, 11, 0.5)',
-            }}
-            title="បើកមេរៀនភ្ជាប់ File 3D"
-          >
-            <BookOpen size={16} color="#fbbf24" />
-            <span>មេរៀន 3D (Guide)</span>
-          </button>
 
           {/* Toggle Camera Button */}
           <button
