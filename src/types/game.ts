@@ -5,6 +5,7 @@ export interface PlayerControls {
   right: boolean;
   run: boolean;
   jump: boolean;
+  moveVector?: { x: number; y: number };
 }
 
 export interface PlayerState {

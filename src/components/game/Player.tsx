@@ -1,9 +1,9 @@
-import { useRef, useEffect, useMemo } from 'react';
-import * as THREE from 'three';
-import { useFrame } from '@react-three/fiber';
-import { useGLTF, useAnimations, useFBX } from '@react-three/drei';
-import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
-import { useModelAvailability } from '../../hooks/useModelAvailability';
+import { useRef, useEffect, useMemo } from "react";
+import * as THREE from "three";
+import { useFrame } from "@react-three/fiber";
+import { useGLTF, useAnimations, useFBX } from "@react-three/drei";
+import * as SkeletonUtils from "three/examples/jsm/utils/SkeletonUtils.js";
+import { useModelAvailability } from "../../hooks/useModelAvailability";
 
 export interface PlayerProps {
   modelUrl?: string;
@@ -68,8 +68,9 @@ function LoadedGLTFPlayer({
     if (!actions || names.length === 0) return;
 
     const findAction = (keyword: string) => {
-      const match = names.find((n) => n.toLowerCase() === keyword.toLowerCase()) ||
-                    names.find((n) => n.toLowerCase().includes(keyword.toLowerCase()));
+      const match =
+        names.find((n) => n.toLowerCase() === keyword.toLowerCase()) ||
+        names.find((n) => n.toLowerCase().includes(keyword.toLowerCase()));
       return match ? actions[match] : null;
     };
 
@@ -79,13 +80,13 @@ function LoadedGLTFPlayer({
     if (activeEmote && actions[activeEmote] && !isMoving) {
       targetAction = actions[activeEmote];
     } else if (!isGrounded) {
-      targetAction = findAction('jump') || findAction('air');
+      targetAction = findAction("jump") || findAction("air");
     } else if (isMoving) {
       targetAction = isRunning
-        ? findAction('run') || findAction('sprint') || findAction('walk')
-        : findAction('walk') || findAction('run');
+        ? findAction("run") || findAction("sprint") || findAction("walk")
+        : findAction("walk") || findAction("run");
     } else {
-      targetAction = findAction('idle') || actions[names[0]];
+      targetAction = findAction("idle") || actions[names[0]];
     }
 
     if (targetAction) {
@@ -146,9 +147,11 @@ function LoadedFBXPlayer({
     // Clone animations and apply in-place root motion fix
     const clips = rawFbx.animations.map((clip) => {
       const clonedClip = clip.clone();
-      clonedClip.name = 'FastRun';
+      clonedClip.name = "FastRun";
       // In-place fix for root hip displacement so camera & player controller can move naturally
-      const hipTrack = clonedClip.tracks.find((t) => t.name.includes('Hips.position'));
+      const hipTrack = clonedClip.tracks.find((t) =>
+        t.name.includes("Hips.position"),
+      );
       if (hipTrack) {
         const initialZ = hipTrack.values[2];
         const initialX = hipTrack.values[0];
@@ -183,7 +186,7 @@ function LoadedFBXPlayer({
   useEffect(() => {
     if (!actions || names.length === 0) return;
 
-    const fastRunAction = actions['FastRun'] || actions[names[0]];
+    const fastRunAction = actions["FastRun"] || actions[names[0]];
     if (!fastRunAction) return;
 
     // If moving or emote active, play FastRun loop
@@ -207,7 +210,11 @@ function LoadedFBXPlayer({
 }
 
 // 3. Stylized Animated 3D Explorer Tourist Fallback
-function FallbackStylizedPlayer({ isMoving, isRunning, isGrounded }: PlayerProps) {
+function FallbackStylizedPlayer({
+  isMoving,
+  isRunning,
+  isGrounded,
+}: PlayerProps) {
   const leftArmRef = useRef<THREE.Group>(null);
   const rightArmRef = useRef<THREE.Group>(null);
   const leftLegRef = useRef<THREE.Group>(null);
@@ -232,7 +239,8 @@ function FallbackStylizedPlayer({ isMoving, isRunning, isGrounded }: PlayerProps
       if (rightLegRef.current) rightLegRef.current.rotation.x = swing;
 
       if (bodyRef.current) {
-        bodyRef.current.position.y = Math.abs(Math.sin(t * speedMultiplier)) * 0.08;
+        bodyRef.current.position.y =
+          Math.abs(Math.sin(t * speedMultiplier)) * 0.08;
       }
     } else {
       const breath = Math.sin(t * 2) * 0.03;
@@ -323,13 +331,13 @@ function FallbackStylizedPlayer({ isMoving, isRunning, isGrounded }: PlayerProps
 
 // 4. Main Player Component
 export function Player({
-  modelUrl = '/models/characters/ItEngineer.glb',
+  modelUrl = "/models/characters/new.glb",
   ...props
 }: PlayerProps) {
   const isAvailable = useModelAvailability(modelUrl);
 
   if (isAvailable) {
-    if (modelUrl.toLowerCase().endsWith('.fbx')) {
+    if (modelUrl.toLowerCase().endsWith(".fbx")) {
       return <LoadedFBXPlayer url={modelUrl} {...props} />;
     }
     return <LoadedGLTFPlayer url={modelUrl} {...props} />;

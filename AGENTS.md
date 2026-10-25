@@ -81,6 +81,13 @@ Do not force all modes to share identical controls or camera behavior. Reuse com
 
 - The 3D world is the main experience; UI should support it without covering too much of the screen.
 - Use a clear hierarchy: objective, progress/reward, essential controls, and pause/settings.
+- **Realistic & Diegetic UI (ការរចនា UI បែបរូបរាងជីវិតពិត):**
+  - រចនា UI ឱ្យមានទម្រង់ជាវត្ថុប្រើប្រាស់ជាក់ស្តែងក្នុងជីវិតពិត (Tangible & Skeuomorphic / Diegetic UI) ជៀសវាងផ្ទាំង 2D Flat HUD ធម្មតា ដើម្បីបង្កើនភាពរស់រវើក និងទាក់ទាញអារម្មណ៍ទេសចរណ៍៖
+    - **សៀវភៅមគ្គុទ្ទេសក៍ទេសចរណ៍ ឬលិខិតឆ្លងដែន (Travel Guidebook / Tourist Passport):** សម្រាប់បើកមើល Quest, Inventory, និងប្រមូលត្រាអនុស្សាវរីយ៍ (Stamp Collection) នៃតំបន់ទេសចរណ៍នីមួយៗ។
+    - **ផែនទីក្រដាស ឬកូនសៀវភៅកត់ត្រា (Physical Paper Map & Travel Journal):** សម្រាប់រុករកទិសដៅ ចំណុចសំខាន់ និងប្រវត្តិទីតាំង។
+    - **ត្រីវិស័យបុរាណ និងស្លាកសញ្ញាឈើ (Brass Compass & Wooden Signposts):** សម្រាប់ចង្អុលបង្ហាញទិសដៅ និងផ្លូវធ្វើដំណើរក្នុងធម្មជាតិ ឬប្រាសាទ។
+    - **កុងទ័រ និងផ្ទាំងបញ្ជាយានជំនិះជាក់ស្តែង (Realistic Vehicle Dashboards):** សម្រាប់ម៉ូដបើកបរកង់បី (Tuk-Tuk) និងទូក ដែលមាននាឡិកាល្បឿន ចង្កូត និងភ្លើងសញ្ញាដូចយានជំនិះពិត។
+    - **ឧបករណ៍ស្មាតហ្វូនទេសចរណ៍ (Travel Smart Device / Camera):** សម្រាប់មុខងារថតរូបអនុស្សាវរីយ៍ (Photo Mode) និងស្កេនព័ត៌មានវប្បធម៌។
 - Keep the interface simple, readable, and consistent across modes.
 - Provide short onboarding instructions the first time a mode is played.
 - Make keyboard and touch controls discoverable; never rely on color alone to communicate status.
@@ -190,4 +197,26 @@ A feature is complete only when:
 - **ភាសាក្នុងការឆ្លើយតប (Response Language):** រាល់ការឆ្លើយតប ការពន្យល់ និងរបាយការណ៍ទាំងអស់ទៅកាន់អ្នកប្រើប្រាស់ ត្រូវតែធ្វើឡើងជាភាសាខ្មែរ (Khmer language)។
 - **ពាក្យបច្ចេកទេស និងកូដ (Technical Terms & Code):** ឈ្មោះឯកសារ កូដ ពាក្យបញ្ជា (commands) និងពាក្យបច្ចេកទេសទូទៅ អាចរក្សាទុកជាភាសាអង់គ្លេស ឬសរសេរអមជាមួយការពន្យល់ជាភាសាខ្មែរ ដើម្បីភាពច្បាស់លាស់។
 - **របាយការណ៍ការងារ (Workflow Reporting):** ការរាយការណ៍តាមជំហាន (ដូចជា Step 6 — Report) ត្រូវតែបង្ហាញជាភាសាខ្មែរ។
+
+## 11. 3D Scripting APIs & Tool Integration (បំពង់បង្ហូរការងារ 3D Scripting ជាមួយ Blender `bpy` & Unreal Engine)
+
+ដើម្បីធានាថាក្រាហ្វិក UI និងទ្រព្យសម្បត្តិ 3D (3D Assets) មានរូបរាងស្អាត និងរស់រវើកដូចជីវិតពិត ត្រូវអនុវត្តតាមគោលការណ៍បច្ចេកវិទ្យាដូចខាងក្រោម៖
+
+### ក. ការបង្កើត 3D Asset & Diegetic UI ដោយស្វ័យប្រវត្តិតាមរយៈ Blender Python API (`bpy`)
+1. **ស្វ័យប្រវត្តិកម្មកូដ (Procedural Scripting):**
+   - ប្រើប្រាស់ Python Scripts (`bpy`) ក្នុងការបង្កើតម៉ូដែល 3D (តួអង្គ, យានជំនិះ Tuk-Tuk, ទូក, និង UI ដូចជីវិតពិតដូចជា កូនសៀវភៅ Passport, ត្រីវិស័យ, ផ្ទាំងកុងទ័រ)។
+   - ដំណើរការ Blender ក្នុងទម្រង់ Background (Headless) តាមរយៈ Command-Line៖
+     ```powershell
+     & "C:\Program Files\Blender Foundation\Blender 5.2\blender.exe" --background --python <path_to_script.py>
+     ```
+2. **ការនាំចេញ (Export Pipeline):**
+   - នាំចេញដោយស្វ័យប្រវត្តិជាទម្រង់ `.glb` / `.gltf` ទៅកាន់ `public/models/` នៃគម្រោង Web Game។
+   - កំណត់ PBR Materials, UV Mapping, និង Origin Point ឱ្យបានត្រឹមត្រូវ (Z-up ឬ Y-up តាមស្តង់ដារ Three.js) និងធ្វើ Optimization (Poly count សមរម្យសម្រាប់ WebGL)។
+
+### ខ. ការត្រៀមខ្លួនសម្រាប់ Unreal Engine 5 (High-Fidelity & Cinematic Pipeline)
+1. **ស្តង់ដាររួម (Unified Standards):**
+   - រក្សាខ្នាត (Unit Scale) ស្តង់ដារ៖ `1 unit = 1 meter` ឬ `1 unit = 1 cm` ឱ្យស៊ីគ្នាជាមួយទាំង Three.js និង Unreal Engine។
+   - រចនារចនាសម្ព័ន្ធទិន្នន័យ (Data Schemas) សម្រាប់ Destination, Quests, និង Cooking Recipes ដោយឡែកពី Render Layer ដើម្បីអាចយក Logic ទាំងនេះទៅប្រើក្នុង Unreal Engine 5 C++ / Blueprints បានដោយផ្ទាល់។
+2. **កម្រិតក្រាហ្វិកកំពូល (Nanite & Lumen Compatibility):**
+   - សម្រាប់ម៉ូដែលចម្លាក់លម្អិតកម្រិតខ្ពស់ (High-poly Sculpt) នៅក្នុង Blender ត្រូវរក្សាទុកឯកសារមេ (Master `.blend` ឬ High-res `.fbx` / `.usd`) សម្រាប់ប្រើជាមួយ Unreal Engine 5 Nanite ខណៈពេលដែល export កំណែស្រាល (`.glb`) សម្រាប់ Three.js Web Game។
 

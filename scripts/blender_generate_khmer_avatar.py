@@ -1,15 +1,20 @@
 """
-Blender 5.x Python Script: Generate Traditional Khmer Outfit Player Avatar
-Follows reference design:
-- Khmer Woven Straw Hat (មួកស្លឹកខ្មែរ) with Cambodian Flag (ទង់ជាតិកម្ពុជា) & chin strap
-- Traditional Linen Shirt (អាវកត្រង់ដៃវែងបត់) in cream/beige with rolled-up sleeves
-- Red & White Checkered Krama Sash (ក្រមាខ្មែរក្រវាត់ចង្កេះ) with hip knot and hanging fringe
-- Rich Chocolate Brown Chong Kben Pants (ខោរបៀបចងក្បិន)
-- High Knee-Length Weathered Leather Boots (ស្បែកជើងកវែងស្បែក)
-- Humanoid Armature with rigged vertex groups and animations: Idle, Walk, Run, Jump, Wave, Bow (Sampeah)
+Blender 5.2 Python Script: High-Fidelity Khmer Traditional Outfit Avatar Generator
+Animations Included:
+- Idle (ដកដង្ហើម និងយោលដៃធម្មជាតិ)
+- Walk (ដើរ)
+- Run (រត់)
+- Jump (លោតឡើងលើ)
+- Attack (វាយប្រហារ/ដាល់ទៅមុខ)
+- Dash (ហក់/បោះខ្លួនទៅមុខ)
+- Wave (លើកដៃបក់)
+- Bow (សំពះប្រពៃណីខ្មែរ)
+Rigging:
+- 17-bone Standard Humanoid Armature with 100% explicit vertex groups (Zero weighting failures).
 """
 
 import bpy
+import bmesh
 import math
 import os
 import numpy as np
@@ -17,7 +22,7 @@ import numpy as np
 def clean_scene():
     bpy.ops.wm.read_factory_settings(use_empty=True)
 
-def create_textured_material(name, img_array, roughness=0.6, metallic=0.0):
+def create_pbr_material(name, img_array, roughness=0.6, metallic=0.0):
     mat = bpy.data.materials.new(name=name)
     nodes = mat.node_tree.nodes
     links = mat.node_tree.links
@@ -35,357 +40,516 @@ def create_textured_material(name, img_array, roughness=0.6, metallic=0.0):
     bsdf.inputs['Metallic'].default_value = metallic
     return mat
 
-# --- TEXTURE GENERATORS ---
-def gen_flag_texture(w=512, h=320):
+# ==========================================
+# 1. TEXTURE GENERATORS
+# ==========================================
+
+def gen_flag_texture(w=1024, h=640):
     img = np.zeros((h, w, 4), dtype=np.float32)
-    blue = np.array([0.012, 0.180, 0.651, 1.0], dtype=np.float32)
-    red = np.array([0.878, 0.000, 0.145, 1.0], dtype=np.float32)
+    blue = np.array([0.015, 0.170, 0.650, 1.0], dtype=np.float32)
+    red  = np.array([0.860, 0.020, 0.130, 1.0], dtype=np.float32)
     white = np.array([1.0, 1.0, 1.0, 1.0], dtype=np.float32)
     
-    h1 = int(h * 0.25)
-    h2 = int(h * 0.75)
-    # Bottom blue (V=0..0.25), Center red (V=0.25..0.75), Top blue (V=0.75..1.0)
-    img[:h1, :] = blue
-    img[h1:h2, :] = red
-    img[h2:, :] = blue
+    h_blue = int(h * 0.25)
+    img[:h_blue, :] = blue
+    img[h - h_blue:, :] = blue
+    img[h_blue : h - h_blue, :] = red
     
     cx, cy = w // 2, h // 2
-    # Base platform
-    bw, bh = int(w * 0.32), int(h * 0.05)
-    img[cy - int(h*0.12) : cy - int(h*0.12) + bh, cx - bw//2 : cx + bw//2] = white
-    # Second tier
-    t2w, t2h = int(w * 0.25), int(h * 0.04)
-    img[cy - int(h*0.12) + bh : cy - int(h*0.12) + bh + t2h, cx - t2w//2 : cx + t2w//2] = white
+    b1_w, b1_h = int(w * 0.36), int(h * 0.045)
+    img[cy - int(h*0.14) : cy - int(h*0.14) + b1_h, cx - b1_w//2 : cx + b1_w//2] = white
+    b2_w, b2_h = int(w * 0.30), int(h * 0.038)
+    base_top = cy - int(h*0.14) + b1_h
+    img[base_top : base_top + b2_h, cx - b2_w//2 : cx + b2_w//2] = white
     
-    # Towers pointing up (+V direction)
-    base_top = cy - int(h*0.12) + bh + t2h
-    # Center tower
-    cw, ch = int(w * 0.05), int(h * 0.18)
-    img[base_top : base_top + ch, cx - cw//2 : cx + cw//2] = white
-    for dy in range(int(h * 0.06)):
-        sw = int((cw // 2) * (1 - dy / (h * 0.06)))
-        if sw > 0 and base_top + ch + dy < h2:
-            img[base_top + ch + dy, cx - sw : cx + sw] = white
+    wall_top = base_top + b2_h
+    cw, ch = int(w * 0.06), int(h * 0.20)
+    img[wall_top : wall_top + ch, cx - cw//2 : cx + cw//2] = white
+    for dy in range(int(h * 0.08)):
+        sw = int((cw // 2) * (1.0 - (dy / (h * 0.08))**0.8))
+        if sw > 0 and wall_top + ch + dy < h - h_blue:
+            img[wall_top + ch + dy, cx - sw : cx + sw] = white
             
-    # Flanking towers
-    for off in [-int(w * 0.085), int(w * 0.085)]:
-        tx, tw, th = cx + off, int(w * 0.038), int(h * 0.13)
-        img[base_top : base_top + th, tx - tw//2 : tx + tw//2] = white
-        for dy in range(int(h * 0.045)):
-            sw = int((tw // 2) * (1 - dy / (h * 0.045)))
-            if sw > 0 and base_top + th + dy < h2:
-                img[base_top + th + dy, tx - sw : tx + sw] = white
+    for off in [-int(w * 0.095), int(w * 0.095)]:
+        tx, tw, th = cx + off, int(w * 0.046), int(h * 0.14)
+        img[wall_top : wall_top + th, tx - tw//2 : tx + tw//2] = white
+        for dy in range(int(h * 0.06)):
+            sw = int((tw // 2) * (1.0 - (dy / (h * 0.06))**0.8))
+            if sw > 0 and wall_top + th + dy < h - h_blue:
+                img[wall_top + th + dy, tx - sw : tx + sw] = white
+                
+    for off in [-int(w * 0.14), int(w * 0.14)]:
+        tx, tw, th = cx + off, int(w * 0.032), int(h * 0.08)
+        img[wall_top : wall_top + th, tx - tw//2 : tx + tw//2] = white
+        
     return img
 
-def gen_krama_texture(size=512):
+def gen_krama_texture(size=1024):
     img = np.zeros((size, size, 4), dtype=np.float32)
-    dark_red = np.array([0.55, 0.08, 0.12, 1.0], dtype=np.float32)
-    med_red  = np.array([0.78, 0.32, 0.36, 1.0], dtype=np.float32)
-    white    = np.array([0.96, 0.93, 0.89, 1.0], dtype=np.float32)
-    cell = size // 16
+    dark_red   = np.array([0.65, 0.06, 0.12, 1.0], dtype=np.float32)
+    bright_red = np.array([0.88, 0.20, 0.25, 1.0], dtype=np.float32)
+    white      = np.array([0.98, 0.98, 0.97, 1.0], dtype=np.float32)
+    
+    cell = size // 32
     for y in range(size):
-        r = ((y // cell) % 2) == 0
+        r_even = ((y // cell) % 2) == 0
+        y_thread = math.sin(y * 0.5) * 0.02
         for x in range(size):
-            c = ((x // cell) % 2) == 0
-            val = dark_red if (r and c) else (med_red if (r or c) else white)
-            noise = ((x + y) % 3) * 0.02 - 0.01
-            img[y, x] = np.clip(val + np.array([noise, noise, noise, 0.0]), 0.0, 1.0)
+            c_even = ((x // cell) % 2) == 0
+            x_thread = math.sin(x * 0.5) * 0.02
+            
+            if r_even and c_even:
+                col = dark_red
+            elif r_even or c_even:
+                col = bright_red
+            else:
+                col = white
+                
+            weave = (x_thread + y_thread)
+            img[y, x] = np.clip(col + np.array([weave, weave, weave, 0.0]), 0.0, 1.0)
+            
+    for i in range(0, size, cell * 8):
+        img[i:i+3, :] = np.clip(img[i:i+3, :] * 0.4 + np.array([0.05, 0.08, 0.35, 0.0]), 0.0, 1.0)
+        img[:, i:i+3] = np.clip(img[:, i:i+3] * 0.4 + np.array([0.05, 0.08, 0.35, 0.0]), 0.0, 1.0)
+        
     return img
 
-def gen_straw_texture(size=512):
+def gen_straw_texture(size=1024):
     img = np.zeros((size, size, 4), dtype=np.float32)
-    base = np.array([0.83, 0.70, 0.48, 1.0], dtype=np.float32)
-    light = np.array([0.92, 0.81, 0.60, 1.0], dtype=np.float32)
-    dark  = np.array([0.65, 0.52, 0.33, 1.0], dtype=np.float32)
+    base_straw  = np.array([0.88, 0.78, 0.58, 1.0], dtype=np.float32)
+    light_straw = np.array([0.96, 0.88, 0.70, 1.0], dtype=np.float32)
+    dark_straw  = np.array([0.72, 0.60, 0.42, 1.0], dtype=np.float32)
+    
+    cx, cy = size / 2.0, size / 2.0
+    y_coords, x_coords = np.mgrid[0:size, 0:size]
+    angles = np.arctan2(y_coords - cy, x_coords - cx)
+    radii = np.sqrt((x_coords - cx)**2 + (y_coords - cy)**2)
+    
+    slat_wave = np.sin(angles * 36.0)
+    radial_rings = np.sin(radii * 0.15)
+    
     for y in range(size):
         for x in range(size):
-            slat = ((x // 8) % 2) ^ ((y // 16) % 2)
-            c = light if slat else dark
-            img[y, x] = c * 0.35 + base * 0.65
+            sw = slat_wave[y, x]
+            rr = radial_rings[y, x]
+            val = sw * 0.20 + rr * 0.08
+            c = (base_straw * (1.0 - val) + light_straw * val) if val > 0 else (base_straw * (1.0 + val) + dark_straw * (-val))
+            noise = (((x * 17 + y * 31) % 11) / 11.0) * 0.02
+            img[y, x] = np.clip(c + np.array([noise, noise, noise, 0.0]), 0.0, 1.0)
     return img
 
-def gen_linen_texture(size=256):
+def gen_linen_texture(size=512):
     img = np.zeros((size, size, 4), dtype=np.float32)
-    base = np.array([0.87, 0.82, 0.72, 1.0], dtype=np.float32)
+    linen_sand = np.array([0.91, 0.87, 0.80, 1.0], dtype=np.float32)
     for y in range(size):
         for x in range(size):
-            weave = (((x % 4 == 0) + (y % 4 == 0)) * 0.02)
-            noise = (((x * 19 + y * 23) % 7) / 7.0) * 0.015
-            img[y, x] = np.clip(base - weave + noise, 0.0, 1.0)
+            slub = ((x % 3 == 0) + (y % 3 == 0)) * 0.02
+            noise = (((x * 19 + y * 23) % 13) / 13.0) * 0.015 - 0.007
+            img[y, x] = np.clip(linen_sand - slub + noise, 0.0, 1.0)
     return img
 
-def gen_chongkben_texture(size=256):
+def gen_chongkben_texture(size=512):
     img = np.zeros((size, size, 4), dtype=np.float32)
-    base = np.array([0.28, 0.17, 0.10, 1.0], dtype=np.float32)
+    warm_brown = np.array([0.36, 0.22, 0.14, 1.0], dtype=np.float32)
     for y in range(size):
         for x in range(size):
-            crease = math.sin(x * 0.1) * 0.02
-            img[y, x] = np.clip(base + crease, 0.0, 1.0)
+            crease = math.sin(x * 0.08) * 0.03
+            noise = (((x * 29 + y * 37) % 17) / 17.0) * 0.015
+            img[y, x] = np.clip(warm_brown + crease + noise, 0.0, 1.0)
     return img
 
-def gen_boots_texture(size=256):
+def gen_boots_texture(size=512):
     img = np.zeros((size, size, 4), dtype=np.float32)
-    base = np.array([0.14, 0.08, 0.05, 1.0], dtype=np.float32)
+    leather = np.array([0.18, 0.11, 0.08, 1.0], dtype=np.float32)
     for y in range(size):
         for x in range(size):
-            grain = (((x * 31 + y * 37) % 11) / 11.0) * 0.02
-            img[y, x] = np.clip(base + grain, 0.0, 1.0)
+            crease = math.sin(y * 0.12) * 0.02 if y < 200 else 0
+            img[y, x] = np.clip(leather + crease, 0.0, 1.0)
+    img[:30, :] = np.clip(leather * 0.7, 0.0, 1.0)
     return img
 
-def gen_skin_texture(size=512):
+def gen_skin_face_texture(size=1024):
     img = np.zeros((size, size, 4), dtype=np.float32)
-    skin = np.array([0.76, 0.55, 0.40, 1.0], dtype=np.float32)
-    img[:, :] = skin
-    # Eyebrows
-    brow = np.array([0.12, 0.09, 0.08, 1.0], dtype=np.float32)
-    img[275:287, 160:225] = brow
-    img[275:287, 287:352] = brow
-    # Eyes
-    white = np.array([0.96, 0.96, 0.96, 1.0], dtype=np.float32)
-    dark_eye = np.array([0.12, 0.08, 0.06, 1.0], dtype=np.float32)
-    img[250:270, 172:218] = white
-    img[252:268, 187:207] = dark_eye
-    img[250:270, 294:340] = white
-    img[252:268, 305:325] = dark_eye
-    # Natural lips
-    lips = np.array([0.64, 0.36, 0.30, 1.0], dtype=np.float32)
-    img[180:198, 225:287] = lips
+    skin_tone = np.array([0.89, 0.74, 0.59, 1.0], dtype=np.float32)
+    img[:, :] = skin_tone
+    
+    fx = int(size * 0.75)  # 768
+    fy = int(size * 0.50)  # 512
+    
+    for y in range(size):
+        for x in range(size):
+            dist = math.sqrt((x - fx)**2 + (y - fy)**2)
+            if dist > 260:
+                factor = min(0.18, (dist - 260) / 300.0 * 0.18)
+                img[y, x, :3] -= factor
+                
+    brow_col = np.array([0.14, 0.10, 0.08, 1.0], dtype=np.float32)
+    for dy in range(18):
+        bw = int(75 * (1.0 - dy / 18.0 * 0.3))
+        img[575 + dy, 716 - bw//2 : 716 + bw//2] = brow_col
+        img[575 + dy, 820 - bw//2 : 820 + bw//2] = brow_col
+        
+    sclera = np.array([0.96, 0.96, 0.96, 1.0], dtype=np.float32)
+    iris   = np.array([0.16, 0.10, 0.07, 1.0], dtype=np.float32)
+    pupil  = np.array([0.03, 0.02, 0.02, 1.0], dtype=np.float32)
+    sheen  = np.array([1.0, 1.0, 1.0, 1.0], dtype=np.float32)
+    
+    ey = 530
+    for ex in [716, 820]:
+        img[ey - 16 : ey + 16, ex - 36 : ex + 36] = sclera
+        y_grid, x_grid = np.ogrid[ey - 16 : ey + 16, ex - 36 : ex + 36]
+        mask_iris = ((x_grid - ex)**2 + (y_grid - ey)**2) <= 15**2
+        img[ey - 16 : ey + 16, ex - 36 : ex + 36][mask_iris] = iris
+        mask_pupil = ((x_grid - ex)**2 + (y_grid - ey)**2) <= 7**2
+        img[ey - 16 : ey + 16, ex - 36 : ex + 36][mask_pupil] = pupil
+        img[ey + 4 : ey + 8, ex + 3 : ex + 7] = sheen
+        
+    lip_col = np.array([0.72, 0.44, 0.38, 1.0], dtype=np.float32)
+    for dy in range(22):
+        lw = int(85 * math.sin(dy / 22.0 * math.pi))
+        img[420 + dy, fx - lw//2 : fx + lw//2] = lip_col
+        
     return img
+
+# ==========================================
+# 2. 3D PROCEDURAL MODEL GENERATION
+# ==========================================
 
 def build_khmer_avatar(output_glb, preview_path=None):
     clean_scene()
-    print("Building Khmer Avatar 3D Model with PBR Textures...")
+    print("-> Creating Rigged Animated Khmer Avatar...")
 
-    # Materials with textures
-    mat_flag = create_textured_material("Mat_Flag", gen_flag_texture(), roughness=0.4)
-    mat_krama = create_textured_material("Mat_Krama", gen_krama_texture(), roughness=0.85)
-    mat_straw = create_textured_material("Mat_Straw", gen_straw_texture(), roughness=0.7)
-    mat_linen = create_textured_material("Mat_LinenShirt", gen_linen_texture(), roughness=0.75)
-    mat_chongkben = create_textured_material("Mat_ChongKben", gen_chongkben_texture(), roughness=0.85)
-    mat_boots = create_textured_material("Mat_Boots", gen_boots_texture(), roughness=0.35, metallic=0.1)
-    mat_skin = create_textured_material("Mat_Skin", gen_skin_texture(), roughness=0.5)
-    mat_hair = create_textured_material("Mat_Hair", np.full((64, 64, 4), [0.08, 0.06, 0.05, 1.0], dtype=np.float32), roughness=0.9)
-    mat_cord = create_textured_material("Mat_HatCord", np.full((64, 64, 4), [0.85, 0.75, 0.55, 1.0], dtype=np.float32), roughness=0.8)
+    mat_flag = create_pbr_material("Mat_Flag", gen_flag_texture(), roughness=0.35)
+    mat_krama = create_pbr_material("Mat_Krama", gen_krama_texture(), roughness=0.85)
+    mat_straw = create_pbr_material("Mat_Straw", gen_straw_texture(), roughness=0.7)
+    mat_linen = create_pbr_material("Mat_LinenShirt", gen_linen_texture(), roughness=0.72)
+    mat_chongkben = create_pbr_material("Mat_ChongKben", gen_chongkben_texture(), roughness=0.82)
+    mat_boots = create_pbr_material("Mat_Boots", gen_boots_texture(), roughness=0.32, metallic=0.15)
+    mat_skin = create_pbr_material("Mat_Skin", gen_skin_face_texture(), roughness=0.48)
+    mat_hair = create_pbr_material("Mat_Hair", np.full((64, 64, 4), [0.08, 0.06, 0.05, 1.0], dtype=np.float32), roughness=0.85)
+    mat_cord = create_pbr_material("Mat_HatCord", np.full((64, 64, 4), [0.86, 0.76, 0.58, 1.0], dtype=np.float32), roughness=0.75)
 
     mesh_objects = []
 
-    # 1. HEAD & FACE
-    bpy.ops.mesh.primitive_uv_sphere_add(radius=0.115, location=(0, 0, 1.63))
+    # ------------------------------------------
+    # A. HEAD & NOSE
+    # ------------------------------------------
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=32, ring_count=24, radius=0.115, location=(0, 0, 1.62))
     head = bpy.context.active_object
-    head.scale = (0.9, 1.0, 1.1)
+    head.scale = (0.88, 1.02, 1.12)
     head.name = "Head"
     head.data.materials.append(mat_skin)
     mesh_objects.append(head)
 
-    # Hair under hat
-    bpy.ops.mesh.primitive_uv_sphere_add(radius=0.12, location=(0, -0.015, 1.66))
+    bpy.ops.mesh.primitive_cone_add(vertices=12, radius1=0.017, radius2=0.007, depth=0.040, location=(0, 0.116, 1.59), rotation=(math.radians(82), 0, 0))
+    nose = bpy.context.active_object
+    nose.name = "Nose"
+    nose.data.materials.append(mat_skin)
+    mesh_objects.append(nose)
+
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=32, ring_count=16, radius=0.122, location=(0, -0.018, 1.64))
     hair = bpy.context.active_object
-    hair.scale = (0.92, 1.02, 0.95)
+    hair.scale = (0.91, 1.02, 0.94)
     hair.name = "Hair"
     hair.data.materials.append(mat_hair)
     mesh_objects.append(hair)
 
-    # Ears
-    for side, sx in [("L", -0.108), ("R", 0.108)]:
-        bpy.ops.mesh.primitive_cylinder_add(radius=0.024, depth=0.012, location=(sx, -0.01, 1.63), rotation=(0, math.pi/2, 0))
+    for side, sx in [("L", -0.105), ("R", 0.105)]:
+        bpy.ops.mesh.primitive_cylinder_add(vertices=16, radius=0.022, depth=0.010, location=(sx, -0.015, 1.60), rotation=(0, math.pi/2, 0))
         ear = bpy.context.active_object
+        ear.scale = (1.0, 1.25, 0.8)
         ear.name = f"Ear_{side}"
         ear.data.materials.append(mat_skin)
         mesh_objects.append(ear)
 
-    # Neck
-    bpy.ops.mesh.primitive_cylinder_add(radius=0.055, depth=0.12, location=(0, 0, 1.50))
+    bpy.ops.mesh.primitive_cylinder_add(vertices=24, radius=0.052, depth=0.12, location=(0, 0, 1.48))
     neck = bpy.context.active_object
     neck.name = "Neck"
     neck.data.materials.append(mat_skin)
     mesh_objects.append(neck)
 
-    # 2. KHMER STRAW HAT & CAMBODIAN FLAG
-    # Hat Brim (sloping cone) sits naturally on head brow
-    bpy.ops.mesh.primitive_cone_add(radius1=0.42, radius2=0.165, depth=0.08, location=(0, 0, 1.68))
-    hat_brim = bpy.context.active_object
-    hat_brim.name = "Hat_Brim"
+    # ------------------------------------------
+    # B. KHMER WOVEN STRAW HAT
+    # ------------------------------------------
+    hat_center_y = -0.02
+    hat_tilt_deg = -8
+    hat_tilt_rad = math.radians(hat_tilt_deg)
+    
+    bm_hat = bmesh.new()
+    segments = 48
+    r_inner, r_outer = 0.155, 0.40
+    z_inner_base, z_outer_base = 1.70, 1.63
+    
+    v_inner = []
+    v_outer = []
+    for i in range(segments):
+        th = (i / segments) * 2 * math.pi
+        pleat_z = math.sin(i * 3) * 0.007
+        xi, yi = r_inner * math.cos(th), r_inner * math.sin(th) + hat_center_y
+        xo, yo = r_outer * math.cos(th), r_outer * math.sin(th) + hat_center_y
+        
+        y_rel = r_inner * math.sin(th)
+        z_tilted_i = z_inner_base + y_rel * math.tan(-hat_tilt_rad)
+        y_rel_o = r_outer * math.sin(th)
+        z_tilted_o = z_outer_base + y_rel_o * math.tan(-hat_tilt_rad)
+        
+        v_inner.append(bm_hat.verts.new((xi, yi, z_tilted_i)))
+        v_outer.append(bm_hat.verts.new((xo, yo, z_tilted_o + pleat_z)))
+        
+    for i in range(segments):
+        i_next = (i + 1) % segments
+        bm_hat.faces.new([v_inner[i], v_outer[i], v_outer[i_next], v_inner[i_next]])
+        
+    mesh_hat_brim = bpy.data.meshes.new("Hat_Brim_Mesh")
+    bm_hat.to_mesh(mesh_hat_brim)
+    bm_hat.free()
+    
+    hat_brim = bpy.data.objects.new("Hat_Brim", mesh_hat_brim)
+    bpy.context.scene.collection.objects.link(hat_brim)
     hat_brim.data.materials.append(mat_straw)
     mesh_objects.append(hat_brim)
 
-    # Hat Crown (cylinder with flat top)
-    bpy.ops.mesh.primitive_cylinder_add(radius=0.165, depth=0.14, location=(0, 0, 1.77))
+    crown_z = 1.77
+    bpy.ops.mesh.primitive_cone_add(vertices=36, radius1=0.155, radius2=0.145, depth=0.13, location=(0, hat_center_y, crown_z), rotation=(hat_tilt_rad, 0, 0))
     hat_crown = bpy.context.active_object
     hat_crown.name = "Hat_Crown"
     hat_crown.data.materials.append(mat_straw)
     mesh_objects.append(hat_crown)
 
-    # Hat Crown Band / Trim
-    bpy.ops.mesh.primitive_torus_add(major_radius=0.168, minor_radius=0.012, location=(0, 0, 1.71))
+    bpy.ops.mesh.primitive_torus_add(major_segments=36, minor_segments=12, major_radius=0.156, minor_radius=0.010, location=(0, hat_center_y, crown_z - 0.055), rotation=(hat_tilt_rad, 0, 0))
     hat_band = bpy.context.active_object
     hat_band.name = "Hat_Band"
     hat_band.data.materials.append(mat_straw)
     mesh_objects.append(hat_band)
 
-    # Cambodian Flag Badge on FRONT of Crown (+Y is front)
-    # Modeled with Z-up, X-horizontal, upright flag
-    bpy.ops.mesh.primitive_cube_add(size=1.0, location=(0, 0.167, 1.78), rotation=(0, 0, 0))
+    flag_y = hat_center_y + 0.153 * math.cos(hat_tilt_rad)
+    flag_z = crown_z + 0.153 * math.sin(-hat_tilt_rad) + 0.01
+    bpy.ops.mesh.primitive_cube_add(size=1.0, location=(0, flag_y, flag_z), rotation=(hat_tilt_rad, 0, 0))
     flag_mesh = bpy.context.active_object
-    flag_mesh.scale = (0.12, 0.005, 0.075)
+    flag_mesh.scale = (0.115, 0.004, 0.068)
     flag_mesh.name = "Hat_Cambodian_Flag"
     flag_mesh.data.materials.append(mat_flag)
     mesh_objects.append(flag_mesh)
 
-    # Hat Chin Cord & Knot
-    bpy.ops.mesh.primitive_torus_add(major_radius=0.105, minor_radius=0.007, location=(0, 0.02, 1.54), rotation=(math.radians(25), 0, 0))
+    bpy.ops.mesh.primitive_torus_add(major_segments=32, minor_segments=8, major_radius=0.098, minor_radius=0.005, location=(0, 0.015, 1.54), rotation=(math.radians(24), 0, 0))
     chin_cord = bpy.context.active_object
-    chin_cord.scale = (0.75, 1.0, 1.2)
+    chin_cord.scale = (0.76, 1.0, 1.25)
     chin_cord.name = "Hat_ChinCord"
     chin_cord.data.materials.append(mat_cord)
     mesh_objects.append(chin_cord)
 
-    # Knot bead under chin
-    bpy.ops.mesh.primitive_uv_sphere_add(radius=0.014, location=(0, 0.065, 1.47))
+    bpy.ops.mesh.primitive_uv_sphere_add(radius=0.013, location=(0, 0.055, 1.47))
     knot_bead = bpy.context.active_object
     knot_bead.name = "Hat_KnotBead"
     knot_bead.data.materials.append(mat_cord)
     mesh_objects.append(knot_bead)
 
-    # 3. LINEN SHIRT (អាវ)
-    # Mandarin Collar
-    bpy.ops.mesh.primitive_cylinder_add(radius=0.062, depth=0.04, location=(0, 0, 1.46))
+    for off_x in [-0.007, 0.007]:
+        bpy.ops.mesh.primitive_cylinder_add(radius=0.004, depth=0.04, location=(off_x, 0.055, 1.44))
+        tassel = bpy.context.active_object
+        tassel.name = "Hat_Tassel"
+        tassel.data.materials.append(mat_cord)
+        mesh_objects.append(tassel)
+
+    # ------------------------------------------
+    # C. BRIGHT SAND LINEN SHIRT & TORSO
+    # ------------------------------------------
+    bm_torso = bmesh.new()
+    torso_rings_data = [
+        (1.44, 0.065, 0.058),
+        (1.39, 0.205, 0.118),
+        (1.30, 0.195, 0.126),
+        (1.20, 0.175, 0.115),
+        (1.08, 0.155, 0.100),
+        (0.98, 0.170, 0.112),
+    ]
+    ring_verts = []
+    n_seg = 24
+    for z_lvl, rx, ry in torso_rings_data:
+        curr_ring = []
+        for i in range(n_seg):
+            ang = (i / n_seg) * 2 * math.pi
+            vx = rx * math.cos(ang)
+            vy = ry * math.sin(ang)
+            curr_ring.append(bm_torso.verts.new((vx, vy, z_lvl)))
+        ring_verts.append(curr_ring)
+        
+    for r in range(len(ring_verts) - 1):
+        for i in range(n_seg):
+            i_next = (i + 1) % n_seg
+            bm_torso.faces.new([
+                ring_verts[r][i],
+                ring_verts[r+1][i],
+                ring_verts[r+1][i_next],
+                ring_verts[r][i_next]
+            ])
+            
+    mesh_torso = bpy.data.meshes.new("TorsoMesh")
+    bm_torso.to_mesh(mesh_torso)
+    bm_torso.free()
+    torso_obj = bpy.data.objects.new("Shirt_Torso", mesh_torso)
+    bpy.context.scene.collection.objects.link(torso_obj)
+    torso_obj.data.materials.append(mat_linen)
+    mesh_objects.append(torso_obj)
+
+    bpy.ops.mesh.primitive_cylinder_add(vertices=24, radius=0.062, depth=0.038, location=(0, 0, 1.455))
     collar = bpy.context.active_object
     collar.name = "Shirt_Collar"
     collar.data.materials.append(mat_linen)
     mesh_objects.append(collar)
 
-    # Upper Chest (Broader shoulders)
-    bpy.ops.mesh.primitive_cylinder_add(radius=0.19, depth=0.22, location=(0, 0, 1.34))
-    upper_torso = bpy.context.active_object
-    upper_torso.scale = (1.05, 0.65, 1.0)
-    upper_torso.name = "Shirt_UpperTorso"
-    upper_torso.data.materials.append(mat_linen)
-    mesh_objects.append(upper_torso)
-
-    # Lower Torso (Tapered waist)
-    bpy.ops.mesh.primitive_cylinder_add(radius=0.17, depth=0.22, location=(0, 0, 1.15))
-    lower_torso = bpy.context.active_object
-    lower_torso.scale = (1.0, 0.62, 1.0)
-    lower_torso.name = "Shirt_LowerTorso"
-    lower_torso.data.materials.append(mat_linen)
-    mesh_objects.append(lower_torso)
-
-    # Chest button placket (+Y front)
-    bpy.ops.mesh.primitive_cube_add(size=1.0, location=(0, 0.125, 1.32))
+    bpy.ops.mesh.primitive_cube_add(size=1.0, location=(0, 0.128, 1.30))
     placket = bpy.context.active_object
-    placket.scale = (0.035, 0.01, 0.22)
+    placket.scale = (0.030, 0.008, 0.22)
     placket.name = "Shirt_Placket"
     placket.data.materials.append(mat_linen)
     mesh_objects.append(placket)
 
-    # Left Chest Pocket
-    bpy.ops.mesh.primitive_cube_add(size=1.0, location=(-0.09, 0.125, 1.30))
+    bpy.ops.mesh.primitive_cube_add(size=1.0, location=(-0.095, 0.128, 1.28))
     pocket = bpy.context.active_object
-    pocket.scale = (0.06, 0.008, 0.07)
+    pocket.scale = (0.062, 0.006, 0.072)
     pocket.name = "Shirt_Pocket"
     pocket.data.materials.append(mat_linen)
     mesh_objects.append(pocket)
 
-    # Upper Arms with Rolled-up Sleeves
-    for side, sx in [("L", -0.23), ("R", 0.23)]:
-        # Upper arm sleeve (linen)
-        bpy.ops.mesh.primitive_cylinder_add(radius=0.065, depth=0.24, location=(sx, 0, 1.25))
+    for side, sx in [("L", -0.19), ("R", 0.19)]:
+        sign = -1 if side == "L" else 1
+        
+        bpy.ops.mesh.primitive_uv_sphere_add(segments=20, ring_count=14, radius=0.068, location=(sx, 0, 1.36))
+        shoulder_cap = bpy.context.active_object
+        shoulder_cap.scale = (1.1, 0.95, 1.0)
+        shoulder_cap.name = f"ShoulderCap_{side}"
+        shoulder_cap.data.materials.append(mat_linen)
+        mesh_objects.append(shoulder_cap)
+
+        elbow_x = sx + sign * 0.035
+        bpy.ops.mesh.primitive_cylinder_add(vertices=20, radius=0.062, depth=0.22, location=((sx + elbow_x)/2, 0, 1.25), rotation=(0, math.radians(-sign * 9), 0))
         sleeve = bpy.context.active_object
         sleeve.name = f"Sleeve_{side}"
         sleeve.data.materials.append(mat_linen)
         mesh_objects.append(sleeve)
 
-        # Rolled sleeve cuff ring
-        bpy.ops.mesh.primitive_torus_add(major_radius=0.068, minor_radius=0.016, location=(sx, 0, 1.13))
+        bpy.ops.mesh.primitive_torus_add(major_segments=24, minor_segments=10, major_radius=0.066, minor_radius=0.016, location=(elbow_x, 0, 1.14), rotation=(0, math.radians(-sign * 9), 0))
         cuff = bpy.context.active_object
         cuff.name = f"SleeveCuff_{side}"
         cuff.data.materials.append(mat_linen)
         mesh_objects.append(cuff)
 
-        # Forearm (exposed skin)
-        bpy.ops.mesh.primitive_cylinder_add(radius=0.045, depth=0.24, location=(sx, 0, 0.98))
+        wrist_x = elbow_x + sign * 0.01
+        bpy.ops.mesh.primitive_cone_add(vertices=20, radius1=0.045, radius2=0.033, depth=0.24, location=((elbow_x + wrist_x)/2, 0, 0.99))
         forearm = bpy.context.active_object
         forearm.name = f"Forearm_{side}"
         forearm.data.materials.append(mat_skin)
         mesh_objects.append(forearm)
 
-        # Hand
-        bpy.ops.mesh.primitive_cube_add(size=1.0, location=(sx, 0, 0.81))
+        bpy.ops.mesh.primitive_cube_add(size=1.0, location=(wrist_x, 0, 0.82))
         hand = bpy.context.active_object
-        hand.scale = (0.045, 0.07, 0.09)
+        hand.scale = (0.040, 0.065, 0.090)
         hand.name = f"Hand_{side}"
         hand.data.materials.append(mat_skin)
         mesh_objects.append(hand)
 
-    # 4. KRAMA SASH BELT & HIP KNOT (ក្រមា)
-    # Waist sash wrap
-    bpy.ops.mesh.primitive_cylinder_add(radius=0.21, depth=0.12, location=(0, 0, 1.02))
+        thumb_x = wrist_x + (-0.022 if side == "L" else 0.022)
+        bpy.ops.mesh.primitive_cylinder_add(vertices=10, radius=0.010, depth=0.042, location=(thumb_x, 0.018, 0.82), rotation=(math.radians(25), 0, 0))
+        thumb = bpy.context.active_object
+        thumb.name = f"Thumb_{side}"
+        thumb.data.materials.append(mat_skin)
+        mesh_objects.append(thumb)
+
+    # ------------------------------------------
+    # D. RED & WHITE KRAMA SASH
+    # ------------------------------------------
+    bpy.ops.mesh.primitive_cylinder_add(vertices=32, radius=0.19, depth=0.12, location=(0, 0, 1.03))
     krama_belt = bpy.context.active_object
-    krama_belt.scale = (1.0, 0.68, 1.0)
+    krama_belt.scale = (1.04, 0.70, 1.0)
     krama_belt.name = "Krama_Belt"
     krama_belt.data.materials.append(mat_krama)
     mesh_objects.append(krama_belt)
 
-    # Krama knot on left hip (+Y front, -X left)
-    bpy.ops.mesh.primitive_uv_sphere_add(radius=0.052, location=(-0.20, 0.08, 1.02))
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=20, ring_count=14, radius=0.055, location=(-0.20, 0.07, 1.03))
     knot = bpy.context.active_object
-    knot.scale = (1.2, 0.85, 1.0)
+    knot.scale = (1.2, 0.82, 0.95)
     knot.name = "Krama_Knot"
     knot.data.materials.append(mat_krama)
     mesh_objects.append(knot)
 
-    # Hanging Krama sash tail over left thigh
-    bpy.ops.mesh.primitive_cube_add(size=1.0, location=(-0.20, 0.10, 0.80))
+    bpy.ops.mesh.primitive_cube_add(size=1.0, location=(-0.20, 0.09, 0.82))
     krama_tail = bpy.context.active_object
-    krama_tail.scale = (0.11, 0.02, 0.38)
+    krama_tail.scale = (0.12, 0.022, 0.40)
     krama_tail.name = "Krama_Tail"
     krama_tail.data.materials.append(mat_krama)
     mesh_objects.append(krama_tail)
 
-    # 5. CHONG KBEN PANTS (ខោរបៀបចងក្បិន)
-    # Hips / Pelvis volume
-    bpy.ops.mesh.primitive_cylinder_add(radius=0.20, depth=0.18, location=(0, 0, 0.90))
+    for tx in np.linspace(-0.24, -0.16, 7):
+        bpy.ops.mesh.primitive_cylinder_add(vertices=6, radius=0.003, depth=0.045, location=(tx, 0.09, 0.60))
+        fringe = bpy.context.active_object
+        fringe.name = "Krama_Fringe"
+        fringe.data.materials.append(mat_straw)
+        mesh_objects.append(fringe)
+
+    # ------------------------------------------
+    # E. VOLUMINOUS CHESTNUT BROWN CHONG KBEN PANTS
+    # ------------------------------------------
+    bpy.ops.mesh.primitive_cylinder_add(vertices=32, radius=0.22, depth=0.22, location=(0, 0, 0.90))
     pelvis = bpy.context.active_object
-    pelvis.scale = (1.0, 0.70, 1.0)
+    pelvis.scale = (1.05, 0.76, 1.0)
     pelvis.name = "ChongKben_Pelvis"
     pelvis.data.materials.append(mat_chongkben)
     mesh_objects.append(pelvis)
 
-    # Puffy legs (tucked at knees)
-    for side, sx in [("L", -0.13), ("R", 0.13)]:
-        # Puffy thigh
-        bpy.ops.mesh.primitive_cylinder_add(radius=0.13, depth=0.34, location=(sx, 0, 0.68))
+    bpy.ops.mesh.primitive_cube_add(size=1.0, location=(0, 0.08, 0.78))
+    center_drape = bpy.context.active_object
+    center_drape.scale = (0.10, 0.05, 0.28)
+    center_drape.name = "ChongKben_CenterDrape"
+    center_drape.data.materials.append(mat_chongkben)
+    mesh_objects.append(center_drape)
+
+    for side, sx in [("L", -0.125), ("R", 0.125)]:
+        bpy.ops.mesh.primitive_cylinder_add(vertices=28, radius=0.145, depth=0.36, location=(sx, 0, 0.68))
         thigh = bpy.context.active_object
-        thigh.scale = (1.0, 1.08, 1.0)
+        thigh.scale = (1.05, 1.18, 1.0)
         thigh.name = f"ChongKben_Thigh_{side}"
         thigh.data.materials.append(mat_chongkben)
         mesh_objects.append(thigh)
 
-        # Knee tuck cuff
-        bpy.ops.mesh.primitive_cylinder_add(radius=0.095, depth=0.08, location=(sx, 0, 0.50))
+        bpy.ops.mesh.primitive_cylinder_add(vertices=24, radius=0.095, depth=0.08, location=(sx, 0, 0.49))
         knee_tuck = bpy.context.active_object
         knee_tuck.name = f"ChongKben_Knee_{side}"
         knee_tuck.data.materials.append(mat_chongkben)
         mesh_objects.append(knee_tuck)
 
-    # 6. HIGH LEATHER BOOTS (ស្បែកជើងកវែង)
-    for side, sx in [("L", -0.13), ("R", 0.13)]:
-        # Boot shaft (knee high)
-        bpy.ops.mesh.primitive_cylinder_add(radius=0.08, depth=0.36, location=(sx, 0, 0.28))
+    # ------------------------------------------
+    # F. HIGH LEATHER EXPEDITION BOOTS
+    # ------------------------------------------
+    for side, sx in [("L", -0.125), ("R", 0.125)]:
+        bpy.ops.mesh.primitive_cone_add(vertices=24, radius1=0.086, radius2=0.060, depth=0.38, location=(sx, 0, 0.29))
         boot_shaft = bpy.context.active_object
+        boot_shaft.scale = (0.95, 1.08, 1.0)
         boot_shaft.name = f"Boot_Shaft_{side}"
         boot_shaft.data.materials.append(mat_boots)
         mesh_objects.append(boot_shaft)
 
-        # Boot foot & toe (+Y front)
-        bpy.ops.mesh.primitive_cube_add(size=1.0, location=(sx, 0.05, 0.05))
+        bpy.ops.mesh.primitive_torus_add(major_segments=24, minor_segments=8, major_radius=0.062, minor_radius=0.009, location=(sx, 0, 0.13))
+        ankle_ring = bpy.context.active_object
+        ankle_ring.name = f"Boot_Ankle_{side}"
+        ankle_ring.data.materials.append(mat_boots)
+        mesh_objects.append(ankle_ring)
+
+        bpy.ops.mesh.primitive_cube_add(size=1.0, location=(sx, 0.052, 0.055))
         boot_foot = bpy.context.active_object
-        boot_foot.scale = (0.11, 0.24, 0.10)
+        boot_foot.scale = (0.110, 0.25, 0.10)
         boot_foot.name = f"Boot_Foot_{side}"
         boot_foot.data.materials.append(mat_boots)
         mesh_objects.append(boot_foot)
 
-    # Join all meshes into a single Character Mesh
+        bpy.ops.mesh.primitive_cube_add(size=1.0, location=(sx, -0.055, 0.022))
+        heel = bpy.context.active_object
+        heel.scale = (0.105, 0.08, 0.038)
+        heel.name = f"Boot_Heel_{side}"
+        heel.data.materials.append(mat_boots)
+        mesh_objects.append(heel)
+
+    # Join all meshes and apply smooth normals
     bpy.ops.object.select_all(action='DESELECT')
     for obj in mesh_objects:
         obj.select_set(True)
@@ -394,11 +558,12 @@ def build_khmer_avatar(output_glb, preview_path=None):
     char_mesh = bpy.context.active_object
     char_mesh.name = "KhmerAvatarMesh"
 
-    # Auto smooth normals
     for poly in char_mesh.data.polygons:
         poly.use_smooth = True
 
-    # 7. ARMATURE RIGGING WITH STANDARD BONES
+    # ------------------------------------------
+    # G. ARMATURE RIGGING WITH EXPLICIT VERTEX WEIGHT GROUPS
+    # ------------------------------------------
     bpy.ops.object.select_all(action='DESELECT')
     arm_data = bpy.data.armatures.new("KhmerRigData")
     arm_obj = bpy.data.objects.new("KhmerRig", arm_data)
@@ -414,66 +579,120 @@ def build_khmer_avatar(output_glb, preview_path=None):
             b.parent = arm_data.edit_bones[parent_name]
         return b
 
-    # Spine chain
     add_bone("Root", (0, 0, 0), (0, 0, 0.2))
     add_bone("Hips", (0, 0, 0.95), (0, 0, 1.15), "Root")
     add_bone("Chest", (0, 0, 1.15), (0, 0, 1.45), "Hips")
     add_bone("Neck", (0, 0, 1.45), (0, 0, 1.55), "Chest")
     add_bone("Head", (0, 0, 1.55), (0, 0, 1.95), "Neck")
 
-    # Legs
-    for side, sx in [("L", -0.13), ("R", 0.13)]:
+    for side, sx in [("L", -0.125), ("R", 0.125)]:
         add_bone(f"UpperLeg_{side}", (sx, 0, 0.95), (sx, 0, 0.50), "Hips")
         add_bone(f"LowerLeg_{side}", (sx, 0, 0.50), (sx, 0, 0.12), f"UpperLeg_{side}")
         add_bone(f"Foot_{side}", (sx, 0, 0.12), (sx, 0.15, 0.02), f"LowerLeg_{side}")
 
-    # Arms
-    for side, sx in [("L", -0.18), ("R", 0.18)]:
+    for side, sx in [("L", -0.19), ("R", 0.19)]:
         sign = -1 if side == "L" else 1
-        add_bone(f"UpperArm_{side}", (sx, 0, 1.38), (sx + sign*0.05, 0, 1.13), "Chest")
-        add_bone(f"Forearm_{side}", (sx + sign*0.05, 0, 1.13), (sx + sign*0.05, 0, 0.88), f"UpperArm_{side}")
-        add_bone(f"Hand_{side}", (sx + sign*0.05, 0, 0.88), (sx + sign*0.05, 0, 0.74), f"Forearm_{side}")
+        add_bone(f"UpperArm_{side}", (sx, 0, 1.36), (sx + sign*0.035, 0, 1.14), "Chest")
+        add_bone(f"Forearm_{side}", (sx + sign*0.035, 0, 1.14), (sx + sign*0.045, 0, 0.88), f"UpperArm_{side}")
+        add_bone(f"Hand_{side}", (sx + sign*0.045, 0, 0.88), (sx + sign*0.045, 0, 0.74), f"Forearm_{side}")
 
     bpy.ops.object.mode_set(mode='OBJECT')
 
-    # Parent mesh to armature with automatic vertex weight groups
-    char_mesh.select_set(True)
-    arm_obj.select_set(True)
-    bpy.context.view_layer.objects.active = arm_obj
-    bpy.ops.object.parent_set(type='ARMATURE_AUTO')
+    # Explicit vertex group creation & assignment to eliminate any weighting failure!
+    bone_names = [
+        "Root", "Hips", "Chest", "Neck", "Head",
+        "UpperLeg_L", "LowerLeg_L", "Foot_L",
+        "UpperLeg_R", "LowerLeg_R", "Foot_R",
+        "UpperArm_L", "Forearm_L", "Hand_L",
+        "UpperArm_R", "Forearm_R", "Hand_R"
+    ]
+    for bname in bone_names:
+        char_mesh.vertex_groups.new(name=bname)
+        
+    vgroups = {bname: char_mesh.vertex_groups[bname] for bname in bone_names}
 
-    # 8. ANIMATIONS (Idle, Walk, Run, Wave, Bow)
+    for v in char_mesh.data.vertices:
+        x, y, z = v.co
+        idx = v.index
+        
+        if z >= 1.55:
+            vgroups["Head"].add([idx], 1.0, 'REPLACE')
+        elif z >= 1.45 and abs(x) < 0.14:
+            vgroups["Neck"].add([idx], 1.0, 'REPLACE')
+        elif x < -0.16 and z >= 0.70:
+            if z >= 1.14:
+                vgroups["UpperArm_L"].add([idx], 1.0, 'REPLACE')
+            elif z >= 0.88:
+                vgroups["Forearm_L"].add([idx], 1.0, 'REPLACE')
+            else:
+                vgroups["Hand_L"].add([idx], 1.0, 'REPLACE')
+        elif x > 0.16 and z >= 0.70:
+            if z >= 1.14:
+                vgroups["UpperArm_R"].add([idx], 1.0, 'REPLACE')
+            elif z >= 0.88:
+                vgroups["Forearm_R"].add([idx], 1.0, 'REPLACE')
+            else:
+                vgroups["Hand_R"].add([idx], 1.0, 'REPLACE')
+        elif z >= 1.15:
+            vgroups["Chest"].add([idx], 1.0, 'REPLACE')
+        elif z >= 0.95:
+            vgroups["Hips"].add([idx], 1.0, 'REPLACE')
+        elif x <= 0:
+            if z >= 0.49:
+                vgroups["UpperLeg_L"].add([idx], 1.0, 'REPLACE')
+            elif z >= 0.12:
+                vgroups["LowerLeg_L"].add([idx], 1.0, 'REPLACE')
+            else:
+                vgroups["Foot_L"].add([idx], 1.0, 'REPLACE')
+        else:
+            if z >= 0.49:
+                vgroups["UpperLeg_R"].add([idx], 1.0, 'REPLACE')
+            elif z >= 0.12:
+                vgroups["LowerLeg_R"].add([idx], 1.0, 'REPLACE')
+            else:
+                vgroups["Foot_R"].add([idx], 1.0, 'REPLACE')
+
+    # Bind Mesh to Armature
+    arm_mod = char_mesh.modifiers.new(name="Armature", type='ARMATURE')
+    arm_mod.object = arm_obj
+    char_mesh.parent = arm_obj
+
+    # ------------------------------------------
+    # H. ANIMATIONS (Idle, Walk, Run, Jump, Attack, Dash, Wave, Bow)
+    # ------------------------------------------
     arm_obj.animation_data_create()
 
     def create_action(name, keyframes_func, frame_count):
         act = bpy.data.actions.new(name=name)
         arm_obj.animation_data.action = act
         keyframes_func(act, frame_count)
-        track = arm_obj.animation_data.nla_tracks.new()
-        track.name = name
-        track.strips.new(name, 1, act)
         return act
 
-    # Idle Action
+    # 1. Idle (Breathing)
     def anim_idle(act, length=60):
-        for f, z_off in [(1, 0.0), (30, 0.02), (60, 0.0)]:
-            pb = arm_obj.pose.bones['Chest']
-            pb.location = (0, 0, z_off)
-            pb.keyframe_insert('location', frame=f)
-            pb.rotation_euler = (math.radians(1.5 * z_off * 50), 0, 0)
-            pb.keyframe_insert('rotation_euler', frame=f)
+        for f in [1, 30, 60]:
+            t = (f - 1) / (length - 1)
+            breath = math.sin(t * 2 * math.pi)
+            arm_obj.pose.bones['Chest'].scale = (1.0 + breath * 0.015, 1.0 + breath * 0.025, 1.0)
+            arm_obj.pose.bones['Chest'].keyframe_insert('scale', frame=f)
+            arm_obj.pose.bones['Hips'].location = (0, 0, breath * 0.008)
+            arm_obj.pose.bones['Hips'].keyframe_insert('location', frame=f)
+            arm_obj.pose.bones['UpperArm_L'].rotation_euler = (0, 0, math.radians(-3 + breath * 1.5))
+            arm_obj.pose.bones['UpperArm_L'].keyframe_insert('rotation_euler', frame=f)
+            arm_obj.pose.bones['UpperArm_R'].rotation_euler = (0, 0, math.radians(3 - breath * 1.5))
+            arm_obj.pose.bones['UpperArm_R'].keyframe_insert('rotation_euler', frame=f)
     create_action("Idle", anim_idle, 60)
 
-    # Walk Action
+    # 2. Walk
     def anim_walk(act, length=30):
-        half = length // 2
-        for f, l_leg, r_leg, l_arm, r_arm, z_bob in [
-            (1,            (15, 0, 0),  (-15, 0, 0), (-20, 0, 0), (20, 0, 0),   0.0),
-            (half // 2,    (0, 10, 0),  (0, 0, 0),   (0, 0, 0),   (0, 0, 0),    0.02),
-            (half,         (-15, 0, 0), (15, 0, 0),  (20, 0, 0),  (-20, 0, 0),  0.0),
-            (half + half // 2, (0, 0, 0), (0, 10, 0), (0, 0, 0),  (0, 0, 0),    0.02),
-            (length,       (15, 0, 0),  (-15, 0, 0), (-20, 0, 0), (20, 0, 0),   0.0),
-        ]:
+        frames = [
+            (1, (18, 0, 0), (-18, 0, 0), (-16, 0, 0), (16, 0, 0), 0),
+            (8, (0, 0, 0), (0, 0, 0), (0, 0, 0), (0, 0, 0), 0.015),
+            (15, (-18, 0, 0), (18, 0, 0), (16, 0, 0), (-16, 0, 0), 0),
+            (23, (0, 0, 0), (0, 0, 0), (0, 0, 0), (0, 0, 0), 0.015),
+            (30, (18, 0, 0), (-18, 0, 0), (-16, 0, 0), (16, 0, 0), 0),
+        ]
+        for f, l_leg, r_leg, l_arm, r_arm, z_bob in frames:
             arm_obj.pose.bones['Hips'].location = (0, 0, z_bob)
             arm_obj.pose.bones['Hips'].keyframe_insert('location', frame=f)
             arm_obj.pose.bones['UpperLeg_L'].rotation_euler = [math.radians(x) for x in l_leg]
@@ -486,16 +705,16 @@ def build_khmer_avatar(output_glb, preview_path=None):
             arm_obj.pose.bones['UpperArm_R'].keyframe_insert('rotation_euler', frame=f)
     create_action("Walk", anim_walk, 30)
 
-    # Run Action
+    # 3. Run
     def anim_run(act, length=20):
-        half = length // 2
-        for f, l_leg, r_leg, l_arm, r_arm, z_bob in [
-            (1,            (35, 0, 0),  (-30, 0, 0), (-45, 0, 0), (45, 0, 0),   0.0),
-            (half // 2,    (0, 15, 0),  (0, 0, 0),   (0, 0, 0),   (0, 0, 0),    0.05),
-            (half,         (-30, 0, 0), (35, 0, 0),  (45, 0, 0),  (-45, 0, 0),  0.0),
-            (half + half // 2, (0, 0, 0), (0, 15, 0), (0, 0, 0),  (0, 0, 0),    0.05),
-            (length,       (35, 0, 0),  (-30, 0, 0), (-45, 0, 0), (45, 0, 0),   0.0),
-        ]:
+        frames = [
+            (1, (35, 0, 0), (-35, 0, 0), (-32, 0, 0), (32, 0, 0), 0),
+            (5, (0, 0, 0), (0, 0, 0), (0, 0, 0), (0, 0, 0), 0.035),
+            (10, (-35, 0, 0), (35, 0, 0), (32, 0, 0), (-32, 0, 0), 0),
+            (15, (0, 0, 0), (0, 0, 0), (0, 0, 0), (0, 0, 0), 0.035),
+            (20, (35, 0, 0), (-35, 0, 0), (-32, 0, 0), (32, 0, 0), 0),
+        ]
+        for f, l_leg, r_leg, l_arm, r_arm, z_bob in frames:
             arm_obj.pose.bones['Chest'].rotation_euler = (math.radians(12), 0, 0)
             arm_obj.pose.bones['Chest'].keyframe_insert('rotation_euler', frame=f)
             arm_obj.pose.bones['Hips'].location = (0, 0, z_bob)
@@ -510,7 +729,78 @@ def build_khmer_avatar(output_glb, preview_path=None):
             arm_obj.pose.bones['UpperArm_R'].keyframe_insert('rotation_euler', frame=f)
     create_action("Run", anim_run, 20)
 
-    # Wave Action
+    # 4. Jump (លោតឡើងលើ)
+    def anim_jump(act, length=30):
+        # f: (hips_z, chest_rot_x, leg_rot_x, arm_rot_x)
+        keyframes = [
+            (1, 0.0, 0, 0, 0),
+            (6, -0.06, 15, -25, 20),      # Crouch windup
+            (14, 0.22, -10, 25, -55),     # Apex of jump in air
+            (22, 0.08, 5, 10, -20),       # Falling down
+            (26, -0.04, 12, -18, 15),     # Landing impact
+            (30, 0.0, 0, 0, 0),           # Recover to stand
+        ]
+        for f, hz, cx, lx, ax in keyframes:
+            arm_obj.pose.bones['Hips'].location = (0, 0, hz)
+            arm_obj.pose.bones['Hips'].keyframe_insert('location', frame=f)
+            arm_obj.pose.bones['Chest'].rotation_euler = (math.radians(cx), 0, 0)
+            arm_obj.pose.bones['Chest'].keyframe_insert('rotation_euler', frame=f)
+            arm_obj.pose.bones['UpperLeg_L'].rotation_euler = (math.radians(lx), 0, 0)
+            arm_obj.pose.bones['UpperLeg_L'].keyframe_insert('rotation_euler', frame=f)
+            arm_obj.pose.bones['UpperLeg_R'].rotation_euler = (math.radians(lx), 0, 0)
+            arm_obj.pose.bones['UpperLeg_R'].keyframe_insert('rotation_euler', frame=f)
+            arm_obj.pose.bones['UpperArm_L'].rotation_euler = (math.radians(ax), 0, math.radians(15))
+            arm_obj.pose.bones['UpperArm_L'].keyframe_insert('rotation_euler', frame=f)
+            arm_obj.pose.bones['UpperArm_R'].rotation_euler = (math.radians(ax), 0, math.radians(-15))
+            arm_obj.pose.bones['UpperArm_R'].keyframe_insert('rotation_euler', frame=f)
+    create_action("Jump", anim_jump, 30)
+
+    # 5. Attack (វាយប្រហារ/ដាល់ទៅមុខ)
+    def anim_attack(act, length=24):
+        # Dynamic right straight punch
+        keyframes = [
+            (1, 0, (0, 0, 0), (0, 0, 0)),
+            (6, -0.02, (10, 0, 20), (30, 0, -10)),    # Wind-up right fist back
+            (12, 0.04, (-8, 0, -25), (-95, 0, 15)),  # Power punch forward!
+            (18, 0.01, (-2, 0, -10), (-40, 0, 10)),   # Follow-through
+            (24, 0, (0, 0, 0), (0, 0, 0)),            # Return to stance
+        ]
+        for f, hy, chest_rot, r_arm_rot in keyframes:
+            arm_obj.pose.bones['Hips'].location = (0, hy, 0)
+            arm_obj.pose.bones['Hips'].keyframe_insert('location', frame=f)
+            arm_obj.pose.bones['Chest'].rotation_euler = [math.radians(x) for x in chest_rot]
+            arm_obj.pose.bones['Chest'].keyframe_insert('rotation_euler', frame=f)
+            arm_obj.pose.bones['UpperArm_R'].rotation_euler = [math.radians(x) for x in r_arm_rot]
+            arm_obj.pose.bones['UpperArm_R'].keyframe_insert('rotation_euler', frame=f)
+            # Left arm guards chest
+            arm_obj.pose.bones['UpperArm_L'].rotation_euler = (math.radians(-30), 0, math.radians(20))
+            arm_obj.pose.bones['UpperArm_L'].keyframe_insert('rotation_euler', frame=f)
+    create_action("Attack", anim_attack, 24)
+
+    # 6. Dash (ហក់/បោះខ្លួនទៅមុខ)
+    def anim_dash(act, length=18):
+        keyframes = [
+            (1, (0, 0, 0), 0, (0, 0)),
+            (8, (28, 0, 0), -0.08, (-45, 45)),   # Low aerodynamic lunge
+            (14, (15, 0, 0), -0.03, (-20, 20)),  # Recovery
+            (18, (0, 0, 0), 0, (0, 0)),
+        ]
+        for f, chest_rot, hz, leg_rots in keyframes:
+            arm_obj.pose.bones['Chest'].rotation_euler = [math.radians(x) for x in chest_rot]
+            arm_obj.pose.bones['Chest'].keyframe_insert('rotation_euler', frame=f)
+            arm_obj.pose.bones['Hips'].location = (0, 0, hz)
+            arm_obj.pose.bones['Hips'].keyframe_insert('location', frame=f)
+            arm_obj.pose.bones['UpperArm_L'].rotation_euler = (math.radians(45), 0, math.radians(10))
+            arm_obj.pose.bones['UpperArm_L'].keyframe_insert('rotation_euler', frame=f)
+            arm_obj.pose.bones['UpperArm_R'].rotation_euler = (math.radians(45), 0, math.radians(-10))
+            arm_obj.pose.bones['UpperArm_R'].keyframe_insert('rotation_euler', frame=f)
+            arm_obj.pose.bones['UpperLeg_L'].rotation_euler = (math.radians(leg_rots[0]), 0, 0)
+            arm_obj.pose.bones['UpperLeg_L'].keyframe_insert('rotation_euler', frame=f)
+            arm_obj.pose.bones['UpperLeg_R'].rotation_euler = (math.radians(leg_rots[1]), 0, 0)
+            arm_obj.pose.bones['UpperLeg_R'].keyframe_insert('rotation_euler', frame=f)
+    create_action("Dash", anim_dash, 18)
+
+    # 7. Wave
     def anim_wave(act, length=40):
         for f, rot_z in [(1, 0), (10, 25), (20, -15), (30, 25), (40, 0)]:
             pb = arm_obj.pose.bones['UpperArm_R']
@@ -518,54 +808,62 @@ def build_khmer_avatar(output_glb, preview_path=None):
             pb.keyframe_insert('rotation_euler', frame=f)
     create_action("Wave", anim_wave, 40)
 
-    # Traditional Khmer Bow (Sampeah / សំពះ)
+    # 8. Khmer Sampeah Bow (សំពះ)
     def anim_bow(act, length=50):
         for f, bow_angle in [(1, 0), (25, 25), (50, 0)]:
             arm_obj.pose.bones['Chest'].rotation_euler = (math.radians(bow_angle), 0, 0)
             arm_obj.pose.bones['Chest'].keyframe_insert('rotation_euler', frame=f)
             arm_obj.pose.bones['Head'].rotation_euler = (math.radians(bow_angle * 0.8), 0, 0)
             arm_obj.pose.bones['Head'].keyframe_insert('rotation_euler', frame=f)
-            arm_obj.pose.bones['UpperArm_L'].rotation_euler = (math.radians(-40), math.radians(20), math.radians(35))
+            arm_obj.pose.bones['UpperArm_L'].rotation_euler = (math.radians(-42), math.radians(22), math.radians(35))
             arm_obj.pose.bones['UpperArm_L'].keyframe_insert('rotation_euler', frame=f)
-            arm_obj.pose.bones['UpperArm_R'].rotation_euler = (math.radians(-40), math.radians(-20), math.radians(-35))
+            arm_obj.pose.bones['UpperArm_R'].rotation_euler = (math.radians(-42), math.radians(-22), math.radians(-35))
             arm_obj.pose.bones['UpperArm_R'].keyframe_insert('rotation_euler', frame=f)
     create_action("Bow", anim_bow, 50)
 
+    # Reset pose
     arm_obj.animation_data.action = None
-
-    # Reset poses to rest
     for pb in arm_obj.pose.bones:
         pb.location = (0, 0, 0)
         pb.rotation_euler = (0, 0, 0)
+        pb.scale = (1, 1, 1)
 
-    # Ensure output directory exists
+    # ------------------------------------------
+    # I. EXPORT TO GLB
+    # ------------------------------------------
     os.makedirs(os.path.dirname(output_glb), exist_ok=True)
-
-    # Export to GLB
     bpy.ops.object.select_all(action='SELECT')
     bpy.ops.export_scene.gltf(
         filepath=output_glb,
         export_format='GLB',
         export_animations=True
     )
-    print(f"✓ Khmer Player Avatar exported successfully to: {output_glb}")
+    print(f"✓ Rigged & Animated Khmer Avatar exported to: {output_glb}")
 
-    # Render Front and 3/4 Full Body Preview
+    # ------------------------------------------
+    # J. RENDER HIGH-RES PREVIEW IMAGE
+    # ------------------------------------------
     if preview_path:
         os.makedirs(os.path.dirname(preview_path), exist_ok=True)
         cam_data = bpy.data.cameras.new('PreviewCam')
         cam_obj = bpy.data.objects.new('PreviewCam', cam_data)
         bpy.context.scene.collection.objects.link(cam_obj)
         bpy.context.scene.camera = cam_obj
-        # Looking from front-right at full body
-        cam_obj.location = (0.8, 3.4, 1.05)
-        cam_obj.rotation_euler = (math.radians(92), math.radians(0), math.radians(167))
+        
+        cam_obj.location = (0.45, 3.2, 1.10)
+        cam_obj.rotation_euler = (math.radians(91), math.radians(0), math.radians(172))
 
-        light_data = bpy.data.lights.new('Sun', type='SUN')
-        light_obj = bpy.data.objects.new('Sun', light_data)
-        bpy.context.scene.collection.objects.link(light_obj)
-        light_obj.location = (2, 3, 4)
-        light_data.energy = 4.0
+        sun_data = bpy.data.lights.new('KeySun', type='SUN')
+        sun_obj = bpy.data.objects.new('KeySun', sun_data)
+        bpy.context.scene.collection.objects.link(sun_obj)
+        sun_obj.location = (1.5, 3.5, 3.0)
+        sun_data.energy = 5.0
+
+        fill_data = bpy.data.lights.new('FillSun', type='SUN')
+        fill_obj = bpy.data.objects.new('FillSun', fill_data)
+        bpy.context.scene.collection.objects.link(fill_obj)
+        fill_obj.location = (-1.5, 3.0, 1.8)
+        fill_data.energy = 3.5
 
         bpy.context.scene.render.engine = 'BLENDER_WORKBENCH'
         bpy.context.scene.display.shading.light = 'STUDIO'
@@ -574,10 +872,10 @@ def build_khmer_avatar(output_glb, preview_path=None):
         bpy.context.scene.render.resolution_y = 1024
         bpy.context.scene.render.filepath = preview_path
         bpy.ops.render.render(write_still=True)
-        print(f"✓ Preview render saved to: {preview_path}")
+        print(f"✓ High-Res Preview image rendered to: {preview_path}")
 
 if __name__ == "__main__":
     workspace = os.path.abspath(".")
-    target_glb = os.path.join(workspace, "public", "models", "characters", "ItEngineer.glb")
-    preview_img = os.path.abspath(r"C:\Users\Administrator\.gemini\antigravity-ide\brain\7a536326-32d3-4f22-8b7d-404ff1cabb67\scratch\khmer_avatar_preview.png")
+    target_glb = os.path.join(workspace, "public", "models", "characters", "new.glb")
+    preview_img = os.path.abspath(r"C:\Users\Administrator\.gemini\antigravity-ide\brain\90d8dfb3-da4e-4b16-b4b9-9103a8cb758a\scratch\khmer_avatar_preview.png")
     build_khmer_avatar(target_glb, preview_img)

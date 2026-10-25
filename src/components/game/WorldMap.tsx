@@ -14,6 +14,7 @@ function LoadedGLTFAngkor({ url }: { url: string }) {
       if ((child as THREE.Mesh).isMesh) {
         child.castShadow = true;
         child.receiveShadow = true;
+        child.userData.isCollider = true;
       }
     });
   }, [scene]);
@@ -35,6 +36,7 @@ function LoadedTukTukModel({ url }: { url: string }) {
       if ((child as THREE.Mesh).isMesh) {
         child.castShadow = true;
         child.receiveShadow = true;
+        child.userData.isCollider = true;
       }
     });
   }, [scene]);

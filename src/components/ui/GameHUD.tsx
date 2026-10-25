@@ -1,4 +1,4 @@
-import { Compass, RotateCcw, Video, Coins } from 'lucide-react';
+import { Compass, RotateCcw, Video, Coins, User } from 'lucide-react';
 import type { PlayerState } from '../../types/game';
 
 interface GameHUDProps {
@@ -8,6 +8,8 @@ interface GameHUDProps {
   cameraMode: 'follow' | 'orbit';
   onToggleCamera: () => void;
   onResetPosition: () => void;
+  selectedModel?: string;
+  onSelectModel?: (model: string) => void;
 }
 
 export function GameHUD({
@@ -17,6 +19,8 @@ export function GameHUD({
   cameraMode,
   onToggleCamera,
   onResetPosition,
+  selectedModel,
+  onSelectModel,
 }: GameHUDProps) {
   const isAllCollected = collectedCount >= totalCoins && totalCoins > 0;
 
@@ -97,6 +101,38 @@ export function GameHUD({
             </div>
           </div>
 
+
+          {/* Character Model Switcher */}
+          {onSelectModel && (
+            <button
+              onClick={() =>
+                onSelectModel(
+                  selectedModel === '/models/characters/new.glb'
+                    ? '/models/characters/MenKhStyle.glb'
+                    : '/models/characters/new.glb'
+                )
+              }
+              className="glass-panel"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: '10px 14px',
+                borderRadius: 14,
+                color: '#cbd5e1',
+                fontSize: 12,
+                cursor: 'pointer',
+              }}
+              title="ប្ដូរម៉ូដែលតួអង្គ (New vs MenKhStyle)"
+            >
+              <User size={16} color="#38bdf8" />
+              <span>
+                {selectedModel === '/models/characters/MenKhStyle.glb'
+                  ? 'MenKhStyle'
+                  : 'New Model'}
+              </span>
+            </button>
+          )}
 
           {/* Toggle Camera Button */}
           <button
