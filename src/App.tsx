@@ -12,7 +12,7 @@ import type {
 const INITIAL_COINS: CollectibleItem[] = [
   {
     id: "coin-1",
-    position: [0, 0.8, 3],
+    position: [0, 5.6, 3],
     name: "Path Coin 1",
     nameKm: "កាក់ផ្លូវបុរាណ ១",
     points: 10,
@@ -20,7 +20,7 @@ const INITIAL_COINS: CollectibleItem[] = [
   },
   {
     id: "coin-2",
-    position: [0, 0.8, -5],
+    position: [0, 5.7, -5],
     name: "Path Coin 2",
     nameKm: "កាក់ផ្លូវបុរាណ ២",
     points: 10,
@@ -28,7 +28,7 @@ const INITIAL_COINS: CollectibleItem[] = [
   },
   {
     id: "coin-3",
-    position: [-4, 1.6, -15],
+    position: [-4, 5.2, -15],
     name: "Temple Step Left",
     nameKm: "កាក់ជណ្តើរប្រាសាទឆ្វេង",
     points: 25,
@@ -36,7 +36,7 @@ const INITIAL_COINS: CollectibleItem[] = [
   },
   {
     id: "coin-4",
-    position: [4, 1.6, -15],
+    position: [4, 5.8, -15],
     name: "Temple Step Right",
     nameKm: "កាក់ជណ្តើរប្រាសាទស្តាំ",
     points: 25,
@@ -44,7 +44,7 @@ const INITIAL_COINS: CollectibleItem[] = [
   },
   {
     id: "coin-5",
-    position: [0, 2.2, -18],
+    position: [0, 5.5, -18],
     name: "Temple Inner Courtyard",
     nameKm: "កាក់ខឿនប្រាសាទកណ្តាល",
     points: 50,
@@ -52,7 +52,7 @@ const INITIAL_COINS: CollectibleItem[] = [
   },
   {
     id: "coin-6",
-    position: [14, 0.8, 0],
+    position: [14, 5.8, 0],
     name: "East Garden Token",
     nameKm: "កាក់សួនខាងកើត",
     points: 15,
@@ -60,7 +60,7 @@ const INITIAL_COINS: CollectibleItem[] = [
   },
   {
     id: "coin-7",
-    position: [28, 1.2, 0],
+    position: [28, 5.8, 0],
     name: "River Bridge Token",
     nameKm: "កាក់ស្ពានមាត់ទន្លេ",
     points: 30,
@@ -68,7 +68,7 @@ const INITIAL_COINS: CollectibleItem[] = [
   },
   {
     id: "coin-8",
-    position: [-14, 0.8, -10],
+    position: [-14, 3.6, -10],
     name: "Palm Grove Token",
     nameKm: "កាក់ព្រៃត្នោត",
     points: 20,
@@ -97,7 +97,7 @@ export default function App() {
   );
 
   const [playerState, setPlayerState] = useState<PlayerState>({
-    position: [0, 0, 8],
+    position: [0, 4.85, 8],
     rotation: 0,
     isMoving: false,
     isRunning: false,
@@ -109,9 +109,9 @@ export default function App() {
   const [cameraMode, setCameraMode] = useState<"follow" | "orbit">("follow");
   const [resetKey, setResetKey] = useState(0);
 
-  // Active character model
+  // Active character model: defaults to MenKhStyle.glb (authentic Khmer traditional avatar)
   const [selectedModel, setSelectedModel] = useState<string>(
-    "/models/characters/new.glb"
+    "/models/characters/MenKhStyle.glb"
   );
 
   // Handle coin collection
@@ -133,7 +133,7 @@ export default function App() {
   const handleResetPosition = useCallback(() => {
     setResetKey((k) => k + 1);
     setPlayerState({
-      position: [0, 0, 8],
+      position: [0, 4.85, 8],
       rotation: 0,
       isMoving: false,
       isRunning: false,

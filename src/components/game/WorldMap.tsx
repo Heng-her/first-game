@@ -3,32 +3,60 @@ import * as THREE from "three";
 import { useGLTF } from "@react-three/drei";
 import { useModelAvailability } from "../../hooks/useModelAvailability";
 
-const MAP_MODEL_PATH = "/models/map/angkor-world.glb";
+const MAP_MODEL_PATH = "/models/map/khmer_adventure_map.glb";
 const TUKTUK_MODEL_PATH = "/models/vehicles/tuk-tuk.glb";
 
-function LoadedGLTFAngkor({ url }: { url: string }) {
+// Custom full 3D adventure map (400m x 400m)
+function LoadedGLTFMap({ url }: { url: string }) {
   const { scene } = useGLTF(url);
 
   useEffect(() => {
     scene.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
-        child.castShadow = true;
-        child.receiveShadow = true;
-        child.userData.isCollider = true;
+        const mesh = child as THREE.Mesh;
+        if (mesh.name === "water") {
+          // Water does not cast shadow or block player
+          mesh.castShadow = false;
+          mesh.receiveShadow = true;
+          mesh.userData.isGround = false;
+          mesh.userData.isCollider = false;
+        } else if (mesh.name === "terrain") {
+          // Terrain receives shadow and acts as ground elevation collider
+          mesh.castShadow = false;
+          mesh.receiveShadow = true;
+          mesh.userData.isGround = true; // Designated for player ground snapping
+          mesh.userData.isCollider = false; // Exclude from expensive horizontal raycasts
+        } else if (mesh.name === "props") {
+          // Props (Temple complex & River Bridge, only 5.4k faces now)
+          mesh.castShadow = true;
+          mesh.receiveShadow = true;
+          mesh.userData.isGround = true; // Enables walking on temple steps, terraces, and bridge!
+          mesh.userData.isCollider = true; // Enables solid wall bumping so player cannot walk through walls!
+        } else {
+          mesh.castShadow = true;
+          mesh.receiveShadow = true;
+        }
       }
     });
   }, [scene]);
 
-  return <primitive object={scene} position={[0, 0, -18]} />;
+  // Map origin at (0, 0, 0) aligned with true Blender coordinate space
+  return <primitive object={scene} position={[0, 0, 0]} />;
 }
 
-function ParkedTukTuk() {
+function ParkedTukTuk({ isCustomMap = true }: { isCustomMap?: boolean }) {
   const isTukTukAvailable = useModelAvailability(TUKTUK_MODEL_PATH);
   if (!isTukTukAvailable) return null;
-  return <LoadedTukTukModel url={TUKTUK_MODEL_PATH} />;
+  return <LoadedTukTukModel url={TUKTUK_MODEL_PATH} isCustomMap={isCustomMap} />;
 }
 
-function LoadedTukTukModel({ url }: { url: string }) {
+function LoadedTukTukModel({
+  url,
+  isCustomMap,
+}: {
+  url: string;
+  isCustomMap: boolean;
+}) {
   const { scene } = useGLTF(url);
 
   useEffect(() => {
@@ -41,8 +69,11 @@ function LoadedTukTukModel({ url }: { url: string }) {
     });
   }, [scene]);
 
+  // Elevation at (6.5, 7.5) is ~4.98m on the custom 3D terrain, or 0 on fallback ground
+  const yPos = isCustomMap ? 4.98 : 0;
+
   return (
-    <group position={[6.5, 0, 7.5]} rotation={[0, -Math.PI / 4, 0]}>
+    <group position={[6.5, yPos, 7.5]} rotation={[0, -Math.PI / 4, 0]}>
       <primitive object={scene} />
       {/* Floating beacon to spot Tuk-Tuk */}
       <mesh position={[0, 2.6, 0]}>
@@ -57,7 +88,7 @@ function LoadedTukTukModel({ url }: { url: string }) {
   );
 }
 
-// Procedural environment landscape (Ground, River canal, Sugar palms)
+// Procedural environment landscape (Fallback only if custom model is absent)
 function EnvironmentLandscape() {
   return (
     <group name="environment-landscape">
@@ -134,12 +165,10 @@ function EnvironmentLandscape() {
         [8, 26],
       ].map(([tx, tz], i) => (
         <group key={i} position={[tx, 0, tz]}>
-          {/* Trunk */}
           <mesh position={[0, 3, 0]} castShadow>
             <cylinderGeometry args={[0.25, 0.45, 6, 7]} />
             <meshStandardMaterial color="#5c3a21" roughness={0.9} />
           </mesh>
-          {/* Palm Fronds */}
           <mesh position={[0, 6.2, 0]} castShadow>
             <coneGeometry args={[2.8, 2.5, 6]} />
             <meshStandardMaterial color="#15803d" roughness={0.8} />
@@ -154,7 +183,7 @@ function EnvironmentLandscape() {
   );
 }
 
-// Fallback Sanctuary in case user deletes glb
+// Fallback Sanctuary in case custom glb is absent
 function FallbackSanctuary() {
   return (
     <group position={[0, 0, -18]}>
@@ -169,20 +198,22 @@ function FallbackSanctuary() {
 export function WorldMap() {
   const isCustomModelAvailable = useModelAvailability(MAP_MODEL_PATH);
 
+  // If custom map is available, render ONLY the custom map to avoid duplicate world clipping
+  if (isCustomModelAvailable) {
+    return (
+      <group name="world-map">
+        <LoadedGLTFMap url={MAP_MODEL_PATH} />
+        <ParkedTukTuk isCustomMap={true} />
+      </group>
+    );
+  }
+
+  // Fallback environment only when custom GLB is missing
   return (
     <group name="world-map">
-      {/* 1. Base Landscape: Grass, Roads, River, Trees */}
       <EnvironmentLandscape />
-
-      {/* 2. Blender-modeled Angkor Sanctuary */}
-      {isCustomModelAvailable ? (
-        <LoadedGLTFAngkor url={MAP_MODEL_PATH} />
-      ) : (
-        <FallbackSanctuary />
-      )}
-
-      {/* 3. Blender-modeled Parked Tuk-Tuk */}
-      <ParkedTukTuk />
+      <FallbackSanctuary />
+      <ParkedTukTuk isCustomMap={false} />
     </group>
   );
 }

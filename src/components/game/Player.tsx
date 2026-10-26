@@ -10,17 +10,21 @@ export interface PlayerProps {
   isMoving: boolean;
   isRunning: boolean;
   isGrounded: boolean;
+  movementState?: 'idle' | 'walk' | 'run' | 'sprint' | 'jump' | 'fall' | 'land';
+  movementSpeed?: number;
   activeEmote?: string | null;
   animationSpeed?: number;
   onAnimationsDiscovered?: (names: string[]) => void;
 }
 
-// 1. GLTF / GLB Character Loader
+// 1. GLTF / GLB Character Loader with Robust Animation State Machine
 function LoadedGLTFPlayer({
   url,
   isMoving,
-  isRunning,
-  isGrounded,
+  isRunning: _isRunning,
+  isGrounded: _isGrounded,
+  movementState = 'idle',
+  movementSpeed = 0,
   activeEmote,
   animationSpeed = 1.0,
   onAnimationsDiscovered,
@@ -28,6 +32,7 @@ function LoadedGLTFPlayer({
   const group = useRef<THREE.Group>(null);
   const { scene, animations } = useGLTF(url);
   const { actions, names, mixer } = useAnimations(animations, group);
+  const currentActionRef = useRef<THREE.AnimationAction | null>(null);
 
   // Auto-scale model so all characters have standard 1.8m height
   const { scale, offsetY } = useMemo(() => {
@@ -63,40 +68,96 @@ function LoadedGLTFPlayer({
     }
   }, [mixer, animationSpeed]);
 
-  // Handle animation clips transitions
+  // Animation State Machine with Smooth Cross-fading and Foot-Sliding Prevention
   useEffect(() => {
     if (!actions || names.length === 0) return;
 
     const findAction = (keyword: string) => {
-      const match =
-        names.find((n) => n.toLowerCase() === keyword.toLowerCase()) ||
-        names.find((n) => n.toLowerCase().includes(keyword.toLowerCase()));
-      return match ? actions[match] : null;
+      // 1. Exact match
+      if (actions[keyword]) return actions[keyword];
+      // 2. Case-insensitive exact match
+      const exact = names.find((n) => n.toLowerCase() === keyword.toLowerCase());
+      if (exact && actions[exact]) return actions[exact];
+      // 3. Substring match
+      const sub = names.find((n) => n.toLowerCase().includes(keyword.toLowerCase()));
+      return sub ? actions[sub] : null;
     };
 
     let targetAction: THREE.AnimationAction | null = null;
+    let isLooping = true;
+    let targetTimeScale = 1.0;
 
-    // Emote animation has priority when standing still
+    // Emote animation has highest priority when standing still
     if (activeEmote && actions[activeEmote] && !isMoving) {
       targetAction = actions[activeEmote];
-    } else if (!isGrounded) {
-      targetAction = findAction("jump") || findAction("air");
-    } else if (isMoving) {
-      targetAction = isRunning
-        ? findAction("run") || findAction("sprint") || findAction("walk")
-        : findAction("walk") || findAction("run");
     } else {
-      targetAction = findAction("idle") || actions[names[0]];
+      switch (movementState) {
+        case 'jump':
+          targetAction = findAction('jump') || findAction('air');
+          isLooping = false;
+          break;
+        case 'fall':
+          targetAction = findAction('fall') || findAction('air') || findAction('jump');
+          isLooping = true;
+          break;
+        case 'land':
+          targetAction = findAction('land') || findAction('idle');
+          isLooping = false;
+          break;
+        case 'sprint':
+          targetAction = findAction('sprint') || findAction('run') || findAction('walk');
+          isLooping = true;
+          targetTimeScale = Math.max(1.0, (movementSpeed || 10) / 9.0);
+          break;
+        case 'run':
+          targetAction = findAction('run') || findAction('sprint') || findAction('walk');
+          isLooping = true;
+          targetTimeScale = Math.max(0.85, (movementSpeed || 8.5) / 8.0);
+          break;
+        case 'walk':
+          targetAction = findAction('walk') || findAction('run');
+          isLooping = true;
+          // Scale walk speed dynamically to match movement velocity and eliminate foot sliding
+          targetTimeScale = Math.max(0.7, (movementSpeed || 4.5) / 4.5);
+          break;
+        case 'idle':
+        default:
+          targetAction = findAction('idle') || actions[names[0]];
+          isLooping = true;
+          targetTimeScale = 1.0;
+          break;
+      }
     }
+
+    // Fallback if targetAction wasn't found
+    if (!targetAction) {
+      targetAction = findAction('idle') || actions[names[0]];
+    }
+
+    const prevAction = currentActionRef.current;
 
     if (targetAction) {
-      targetAction.reset().fadeIn(0.2).play();
+      if (prevAction !== targetAction) {
+        if (prevAction) {
+          prevAction.fadeOut(0.2);
+        }
+        targetAction.reset();
+        targetAction.setEffectiveTimeScale(targetTimeScale * animationSpeed);
+        targetAction.setEffectiveWeight(1);
+        if (!isLooping) {
+          targetAction.clampWhenFinished = true;
+          targetAction.loop = THREE.LoopOnce;
+        } else {
+          targetAction.loop = THREE.LoopRepeat;
+        }
+        targetAction.fadeIn(0.2).play();
+        currentActionRef.current = targetAction;
+      } else {
+        // Just update speed if same action continues (e.g. gradual acceleration)
+        targetAction.setEffectiveTimeScale(targetTimeScale * animationSpeed);
+      }
     }
-
-    return () => {
-      if (targetAction) targetAction.fadeOut(0.2);
-    };
-  }, [actions, names, isMoving, isRunning, isGrounded, activeEmote]);
+  }, [actions, names, movementState, movementSpeed, isMoving, activeEmote, animationSpeed]);
 
   return (
     <group ref={group}>

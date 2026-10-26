@@ -24,26 +24,26 @@ function SceneLighting() {
   return (
     <>
       {/* Soft Ambient Light for shadows */}
-      <ambientLight intensity={0.75} />
+      <ambientLight intensity={0.8} />
       
-      {/* Sun / Key Directional Light with Shadows */}
+      {/* Sun / Key Directional Light with Optimized 1024 Shadows for WebGL Performance */}
       <directionalLight
-        position={[25, 35, 20]}
-        intensity={1.8}
+        position={[35, 55, 30]}
+        intensity={1.75}
         castShadow
-        shadow-mapSize-width={2048}
-        shadow-mapSize-height={2048}
+        shadow-mapSize-width={1024}
+        shadow-mapSize-height={1024}
         shadow-camera-near={0.5}
-        shadow-camera-far={100}
-        shadow-camera-left={-30}
-        shadow-camera-right={30}
-        shadow-camera-top={30}
-        shadow-camera-bottom={-30}
-        shadow-bias={-0.0005}
+        shadow-camera-far={200}
+        shadow-camera-left={-60}
+        shadow-camera-right={60}
+        shadow-camera-top={60}
+        shadow-camera-bottom={-60}
+        shadow-bias={-0.0004}
       />
 
       {/* Subtle fill light */}
-      <directionalLight position={[-20, 15, -20]} intensity={0.4} color="#bae6fd" />
+      <directionalLight position={[-25, 20, -25]} intensity={0.4} color="#bae6fd" />
     </>
   );
 }
@@ -64,7 +64,7 @@ export function GameScene({
     <div style={{ width: '100%', height: '100%', position: 'relative' }}>
       <Canvas
         shadows
-        camera={{ position: [0, 6, 16], fov: 50 }}
+        camera={{ position: [0, 9.5, 17], fov: 50 }}
         style={{ width: '100%', height: '100%', display: 'block' }}
       >
         {/* Cambodian Tropical Sun & Blue Sky */}
@@ -76,7 +76,8 @@ export function GameScene({
           turbidity={6}
           rayleigh={1.2}
         />
-        <fog attach="fog" args={['#e0f2fe', 25, 110]} />
+        {/* Expansive tropical fog suited for the 400m adventure map */}
+        <fog attach="fog" args={['#e0f2fe', 60, 320]} />
 
         <SceneLighting />
 
