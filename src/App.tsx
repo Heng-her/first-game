@@ -164,11 +164,12 @@ export default function App() {
         modelUrl={selectedModel}
       />
 
-      {/* Modern Khmer Game HUD */}
+      {/* Modern Khmer Game HUD with Diegetic UI */}
       <GameHUD
         playerState={playerState}
         collectedCount={collectedCount}
         totalCoins={collectibles.length}
+        collectibles={collectibles}
         cameraMode={cameraMode}
         onToggleCamera={() =>
           setCameraMode((m) => (m === "follow" ? "orbit" : "follow"))

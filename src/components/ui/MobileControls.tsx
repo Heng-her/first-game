@@ -212,8 +212,6 @@ export function MobileControls({
           boxShadow: isActive
             ? '0 0 28px rgba(245, 158, 11, 0.45), inset 0 0 20px rgba(245, 158, 11, 0.2)'
             : '0 8px 32px rgba(0, 0, 0, 0.45), inset 0 0 10px rgba(255, 255, 255, 0.05)',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',

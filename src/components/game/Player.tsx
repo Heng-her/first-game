@@ -318,45 +318,107 @@ function FallbackStylizedPlayer({
       {/* Torso / Explorer Vest */}
       <mesh position={[0, 1.25, 0]} castShadow>
         <boxGeometry args={[0.55, 0.65, 0.35]} />
-        <meshStandardMaterial color="#d97706" roughness={0.7} />
+        <meshStandardMaterial color="#c2782b" roughness={0.7} />
       </mesh>
 
-      {/* Explorer Backpack */}
+      {/* Explorer Shirt Inner Collar */}
+      <mesh position={[0, 1.5, 0.05]} castShadow>
+        <boxGeometry args={[0.28, 0.16, 0.28]} />
+        <meshStandardMaterial color="#f8fafc" roughness={0.6} />
+      </mesh>
+
+      {/* Traditional Khmer Kroma Scarf (Wrapped around the neck) */}
+      <mesh position={[0, 1.58, 0]} rotation={[Math.PI / 2, 0, 0]} castShadow>
+        <torusGeometry args={[0.23, 0.07, 8, 20]} />
+        <meshStandardMaterial color="#991b1b" roughness={0.75} />
+      </mesh>
+      {/* Kroma Scarf Hanging Tail on chest */}
+      <mesh position={[0.08, 1.34, 0.2]} rotation={[0.1, 0, -0.1]} castShadow>
+        <boxGeometry args={[0.12, 0.36, 0.05]} />
+        <meshStandardMaterial color="#b91c1c" roughness={0.8} />
+      </mesh>
+
+      {/* Explorer Leather Belt with Brass Buckle */}
+      <mesh position={[0, 0.94, 0]} castShadow>
+        <boxGeometry args={[0.56, 0.09, 0.36]} />
+        <meshStandardMaterial color="#451a03" roughness={0.6} />
+      </mesh>
+      {/* Golden Belt Buckle */}
+      <mesh position={[0, 0.94, 0.19]} castShadow>
+        <boxGeometry args={[0.12, 0.1, 0.03]} />
+        <meshStandardMaterial color="#fbbf24" metalness={0.9} roughness={0.2} />
+      </mesh>
+
+      {/* Explorer Backpack with Straps */}
       <mesh position={[0, 1.3, -0.24]} castShadow>
-        <boxGeometry args={[0.42, 0.48, 0.2]} />
-        <meshStandardMaterial color="#475569" roughness={0.9} />
+        <boxGeometry args={[0.44, 0.5, 0.22]} />
+        <meshStandardMaterial color="#334155" roughness={0.85} />
+      </mesh>
+      {/* Backpack Gold Badge */}
+      <mesh position={[0, 1.35, -0.36]} castShadow>
+        <cylinderGeometry args={[0.06, 0.06, 0.02, 12]} />
+        <meshStandardMaterial color="#fbbf24" metalness={0.9} roughness={0.2} />
       </mesh>
 
       {/* Head */}
-      <mesh position={[0, 1.78, 0]} castShadow>
+      <mesh position={[0, 1.82, 0]} castShadow>
         <sphereGeometry args={[0.22, 16, 16]} />
-        <meshStandardMaterial color="#fed7aa" roughness={0.8} />
+        <meshStandardMaterial color="#fed7aa" roughness={0.7} />
       </mesh>
 
-      {/* Explorer Safari Hat */}
-      <group position={[0, 1.94, 0]}>
+      {/* Stylized Eyes */}
+      <mesh position={[-0.07, 1.84, 0.19]} castShadow>
+        <sphereGeometry args={[0.03, 8, 8]} />
+        <meshStandardMaterial color="#0f172a" roughness={0.2} />
+      </mesh>
+      <mesh position={[0.07, 1.84, 0.19]} castShadow>
+        <sphereGeometry args={[0.03, 8, 8]} />
+        <meshStandardMaterial color="#0f172a" roughness={0.2} />
+      </mesh>
+
+      {/* Explorer Safari Hat with Golden Ribbon */}
+      <group position={[0, 1.97, 0]}>
+        {/* Hat Rim */}
         <mesh rotation={[-Math.PI / 2, 0, 0]} castShadow>
-          <cylinderGeometry args={[0.42, 0.42, 0.04, 16]} />
+          <cylinderGeometry args={[0.44, 0.44, 0.04, 16]} />
           <meshStandardMaterial color="#78350f" roughness={0.8} />
         </mesh>
-        <mesh position={[0, 0.12, 0]} castShadow>
-          <cylinderGeometry args={[0.22, 0.24, 0.22, 16]} />
-          <meshStandardMaterial color="#92400e" roughness={0.8} />
+        {/* Hat Crown */}
+        <mesh position={[0, 0.14, 0]} castShadow>
+          <cylinderGeometry args={[0.24, 0.26, 0.24, 16]} />
+          <meshStandardMaterial color="#854d0e" roughness={0.8} />
+        </mesh>
+        {/* Golden Hat Band */}
+        <mesh position={[0, 0.05, 0]} castShadow>
+          <cylinderGeometry args={[0.265, 0.265, 0.05, 16]} />
+          <meshStandardMaterial color="#fbbf24" metalness={0.8} roughness={0.3} />
         </mesh>
       </group>
 
-      {/* Left Arm */}
+      {/* Left Arm with Sleeve */}
       <group ref={leftArmRef} position={[-0.38, 1.5, 0]}>
-        <mesh position={[0, -0.3, 0]} castShadow>
-          <capsuleGeometry args={[0.08, 0.45, 8, 8]} />
+        {/* Sleeve */}
+        <mesh position={[0, -0.1, 0]} castShadow>
+          <capsuleGeometry args={[0.1, 0.18, 8, 8]} />
+          <meshStandardMaterial color="#c2782b" roughness={0.7} />
+        </mesh>
+        {/* Forearm */}
+        <mesh position={[0, -0.32, 0]} castShadow>
+          <capsuleGeometry args={[0.08, 0.38, 8, 8]} />
           <meshStandardMaterial color="#fed7aa" roughness={0.7} />
         </mesh>
       </group>
 
-      {/* Right Arm */}
+      {/* Right Arm with Sleeve */}
       <group ref={rightArmRef} position={[0.38, 1.5, 0]}>
-        <mesh position={[0, -0.3, 0]} castShadow>
-          <capsuleGeometry args={[0.08, 0.45, 8, 8]} />
+        {/* Sleeve */}
+        <mesh position={[0, -0.1, 0]} castShadow>
+          <capsuleGeometry args={[0.1, 0.18, 8, 8]} />
+          <meshStandardMaterial color="#c2782b" roughness={0.7} />
+        </mesh>
+        {/* Forearm */}
+        <mesh position={[0, -0.32, 0]} castShadow>
+          <capsuleGeometry args={[0.08, 0.38, 8, 8]} />
           <meshStandardMaterial color="#fed7aa" roughness={0.7} />
         </mesh>
       </group>
@@ -367,10 +429,14 @@ function FallbackStylizedPlayer({
           <capsuleGeometry args={[0.1, 0.6, 8, 8]} />
           <meshStandardMaterial color="#1e293b" roughness={0.8} />
         </mesh>
-        {/* Shoe */}
+        {/* Explorer Boot with Sole */}
         <mesh position={[0, -0.82, 0.06]} castShadow>
-          <boxGeometry args={[0.14, 0.12, 0.25]} />
-          <meshStandardMaterial color="#0f172a" />
+          <boxGeometry args={[0.15, 0.14, 0.28]} />
+          <meshStandardMaterial color="#3b200b" roughness={0.7} />
+        </mesh>
+        <mesh position={[0, -0.88, 0.06]} receiveShadow>
+          <boxGeometry args={[0.16, 0.04, 0.3]} />
+          <meshStandardMaterial color="#0f172a" roughness={0.9} />
         </mesh>
       </group>
 
@@ -380,10 +446,14 @@ function FallbackStylizedPlayer({
           <capsuleGeometry args={[0.1, 0.6, 8, 8]} />
           <meshStandardMaterial color="#1e293b" roughness={0.8} />
         </mesh>
-        {/* Shoe */}
+        {/* Explorer Boot with Sole */}
         <mesh position={[0, -0.82, 0.06]} castShadow>
-          <boxGeometry args={[0.14, 0.12, 0.25]} />
-          <meshStandardMaterial color="#0f172a" />
+          <boxGeometry args={[0.15, 0.14, 0.28]} />
+          <meshStandardMaterial color="#3b200b" roughness={0.7} />
+        </mesh>
+        <mesh position={[0, -0.88, 0.06]} receiveShadow>
+          <boxGeometry args={[0.16, 0.04, 0.3]} />
+          <meshStandardMaterial color="#0f172a" roughness={0.9} />
         </mesh>
       </group>
     </group>

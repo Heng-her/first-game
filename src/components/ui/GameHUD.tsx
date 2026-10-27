@@ -1,5 +1,8 @@
-import { Compass, RotateCcw, Video, Coins, User } from 'lucide-react';
-import type { PlayerState } from '../../types/game';
+import { useEffect, useRef } from 'react';
+import { RotateCcw, Video, Coins, Compass as CompassIcon } from 'lucide-react';
+import type { PlayerState, CollectibleItem } from '../../types/game';
+import { BrassCompass } from './BrassCompass';
+import { soundFX } from '../../utils/audio';
 
 interface GameHUDProps {
   playerState: PlayerState;
@@ -10,6 +13,7 @@ interface GameHUDProps {
   onResetPosition: () => void;
   selectedModel?: string;
   onSelectModel?: (model: string) => void;
+  collectibles?: CollectibleItem[];
 }
 
 export function GameHUD({
@@ -19,10 +23,17 @@ export function GameHUD({
   cameraMode,
   onToggleCamera,
   onResetPosition,
-  selectedModel,
-  onSelectModel,
 }: GameHUDProps) {
   const isAllCollected = collectedCount >= totalCoins && totalCoins > 0;
+  const prevCountRef = useRef(collectedCount);
+
+  // Play subtle sound when coin is picked up
+  useEffect(() => {
+    if (collectedCount > prevCountRef.current) {
+      soundFX.playCoinChime();
+    }
+    prevCountRef.current = collectedCount;
+  }, [collectedCount]);
 
   return (
     <div
@@ -37,46 +48,50 @@ export function GameHUD({
         padding: '16px 20px',
       }}
     >
-      {/* Top Header Bar */}
+      {/* Top Clean Navigation & Status Bar */}
       <header
         style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'flex-start',
-          flexWrap: 'wrap',
-          gap: 12,
+          gap: 16,
+          width: '100%',
         }}
       >
-        {/* Left: Quest & Title */}
-        <div
-          className="glass-panel"
-          style={{
-            padding: '12px 18px',
-            borderRadius: 16,
-            pointerEvents: 'auto',
-            maxWidth: 420,
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-            <Compass size={20} color="#f59e0b" />
-            <h1 style={{ fontSize: 16, fontWeight: 700, margin: 0, color: '#f8fafc' }}>
-              ដំណើរផ្សងព្រេងអង្គរ (Angkor Adventure)
-            </h1>
+        {/* Top-Left: Clean Minimal Quest Info */}
+        <div style={{ pointerEvents: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <div
+            className="glass-panel"
+            style={{
+              padding: '10px 18px',
+              borderRadius: 14,
+              border: '1.5px solid rgba(245, 158, 11, 0.4)',
+              background: 'rgba(15, 23, 42, 0.92)',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+              maxWidth: 360,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+              <CompassIcon size={18} color="#f59e0b" />
+              <div style={{ fontSize: 15, fontWeight: 800, color: '#f8fafc' }}>
+                ដំណើរផ្សងព្រេងអង្គរ (Angkor Adventure)
+              </div>
+            </div>
+            <div style={{ fontSize: 12, color: isAllCollected ? '#34d399' : '#cbd5e1', fontWeight: 600 }}>
+              {isAllCollected
+                ? '🎉 អបអរសាទរ! អ្នកបានប្រមូលកាក់មាសទាំងអស់ជោគជ័យ!'
+                : `🎯 បេសកកម្ម៖ រុករកប្រាសាទ និងប្រមូលកាក់បុរាណ (${collectedCount}/${totalCoins})`}
+            </div>
           </div>
-          <p style={{ fontSize: 13, color: '#cbd5e1', margin: 0 }}>
-            {isAllCollected
-              ? '🎉 អបអរសាទរ! អ្នកបានប្រមូលកាក់មាសទាំងអស់ជោគជ័យ!'
-              : 'បេសកកម្ម៖ ដើររុករកបរិស្ថាន និងប្រមូលកាក់បុរាណឱ្យបានគ្រប់ចំនួន។'}
-          </p>
         </div>
 
-        {/* Right: Coins Counter & Controls Buttons */}
+        {/* Top-Right: Clean Brass Compass & Control Buttons */}
         <div
           style={{
+            pointerEvents: 'auto',
             display: 'flex',
             alignItems: 'center',
-            gap: 10,
-            pointerEvents: 'auto',
+            gap: 14,
           }}
         >
           {/* Coin Counter */}
@@ -85,133 +100,93 @@ export function GameHUD({
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: 8,
-              padding: '10px 18px',
+              gap: 10,
+              padding: '10px 16px',
               borderRadius: 16,
-              border: isAllCollected ? '1px solid #10b981' : '1px solid rgba(245, 158, 11, 0.4)',
-              background: isAllCollected ? 'rgba(16, 185, 129, 0.2)' : 'rgba(16, 24, 40, 0.75)',
+              border: isAllCollected ? '2px solid #10b981' : '2px solid #d97706',
+              background: 'rgba(15, 23, 42, 0.92)',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
             }}
           >
-            <Coins size={22} color="#fbbf24" className="animate-float" />
+            <Coins size={24} color="#fbbf24" className="animate-float" />
             <div>
-              <div style={{ fontSize: 11, color: '#94a3b8' }}>កាក់ប្រមូលបាន</div>
-              <div style={{ fontSize: 18, fontWeight: 800, color: '#fbbf24', lineHeight: 1 }}>
-                {collectedCount} / {totalCoins}
+              <div style={{ fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 }}>
+                កាក់ប្រមូលបាន
+              </div>
+              <div style={{ fontSize: 19, fontWeight: 900, color: '#fbbf24', lineHeight: 1 }}>
+                {collectedCount} <span style={{ fontSize: 12, color: '#94a3b8' }}>/ {totalCoins}</span>
               </div>
             </div>
           </div>
 
+          {/* Real-time Tangible Brass Compass */}
+          <BrassCompass rotation={playerState.rotation} size={92} />
 
-          {/* Character Model Switcher */}
-          {onSelectModel && (
+          {/* Action Buttons Column */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {/* Camera Viewfinder Toggle Button */}
             <button
-              onClick={() =>
-                onSelectModel(
-                  selectedModel === '/models/characters/new.glb'
-                    ? '/models/characters/MenKhStyle.glb'
-                    : '/models/characters/new.glb'
-                )
-              }
-              className="glass-panel"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-                padding: '10px 14px',
-                borderRadius: 14,
-                color: '#cbd5e1',
-                fontSize: 12,
-                cursor: 'pointer',
+              onClick={() => {
+                soundFX.playPaperFlip();
+                onToggleCamera();
               }}
-              title="ប្ដូរម៉ូដែលតួអង្គ (New vs MenKhStyle)"
+              className="tactile-button"
+              style={{
+                width: 42,
+                height: 42,
+                padding: 0,
+                borderRadius: '50%',
+                border: '1.5px solid #d97706',
+              }}
+              title={cameraMode === 'follow' ? 'ប្តូរទៅ Orbit Camera' : 'ប្តូរទៅ Follow Camera'}
             >
-              <User size={16} color="#38bdf8" />
-              <span>
-                {selectedModel === '/models/characters/MenKhStyle.glb'
-                  ? 'MenKhStyle'
-                  : 'New Model'}
-              </span>
+              <Video size={19} color="#fbbf24" />
             </button>
-          )}
 
-          {/* Toggle Camera Button */}
-          <button
-            onClick={onToggleCamera}
-            className="glass-panel"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-              padding: '10px 14px',
-              borderRadius: 14,
-              color: '#cbd5e1',
-              fontSize: 12,
-              cursor: 'pointer',
-            }}
-            title="ប្ដូរទិដ្ឋភាពកាមេរ៉ា"
-          >
-            <Video size={16} />
-            <span>{cameraMode === 'follow' ? 'Follow Cam' : 'Free Cam'}</span>
-          </button>
-
-          {/* Reset Position Button */}
-          <button
-            onClick={onResetPosition}
-            className="glass-panel"
-            style={{
-              padding: '10px 12px',
-              borderRadius: 14,
-              color: '#cbd5e1',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-            title="កំណត់ទីតាំងតួអង្គឡើងវិញ"
-          >
-            <RotateCcw size={16} />
-          </button>
+            {/* Reset Position Button */}
+            <button
+              onClick={() => {
+                soundFX.playPaperFlip();
+                onResetPosition();
+              }}
+              className="tactile-button"
+              style={{
+                width: 42,
+                height: 42,
+                padding: 0,
+                borderRadius: '50%',
+                border: '1.5px solid rgba(255,255,255,0.3)',
+              }}
+              title="ត្រឡប់ទៅចំណុចចាប់ផ្តើម (Reset Position)"
+            >
+              <RotateCcw size={19} color="#cbd5e1" />
+            </button>
+          </div>
         </div>
       </header>
 
-      {/* Bottom Controls Legend (Desktop) */}
+      {/* Bottom Bar: Instructions hint */}
       <footer
         style={{
           display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-end',
-          gap: 12,
+          justifyContent: 'center',
+          alignItems: 'center',
+          pointerEvents: 'none',
         }}
       >
         <div
           className="glass-panel"
           style={{
-            padding: '10px 16px',
-            borderRadius: 14,
+            padding: '8px 20px',
+            borderRadius: 24,
             fontSize: 12,
             color: '#cbd5e1',
-            pointerEvents: 'auto',
-            display: 'flex',
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            gap: 12,
+            letterSpacing: 0.3,
+            border: '1px solid rgba(255,255,255,0.15)',
+            boxShadow: '0 6px 18px rgba(0,0,0,0.4)',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <kbd style={{ background: 'rgba(255,255,255,0.15)', padding: '2px 6px', borderRadius: 4, fontFamily: 'monospace' }}>W A S D</kbd>
-            <span>ដើរ</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <kbd style={{ background: 'rgba(255,255,255,0.15)', padding: '2px 6px', borderRadius: 4, fontFamily: 'monospace' }}>Shift</kbd>
-            <span>រត់លឿន</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <kbd style={{ background: 'rgba(255,255,255,0.15)', padding: '2px 6px', borderRadius: 4, fontFamily: 'monospace' }}>Space</kbd>
-            <span>លោត</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#f59e0b' }}>
-            <span>ល្បឿន៖ {playerState.isRunning ? 'កំពុងរត់ ⚡' : playerState.isMoving ? 'កំពុងដើរ 🚶' : 'ឈប់សម្រាក 🧍'}</span>
-          </div>
+          ប្រើប្រាស់ <strong style={{ color: '#fbbf24' }}>W, A, S, D</strong> ដើម្បីដើរ | <strong style={{ color: '#fbbf24' }}>Shift</strong> រត់ | <strong style={{ color: '#fbbf24' }}>Space</strong> លោត
         </div>
       </footer>
     </div>

@@ -23,27 +23,28 @@ interface GameSceneProps {
 function SceneLighting() {
   return (
     <>
-      {/* Soft Ambient Light for shadows */}
-      <ambientLight intensity={0.8} />
+      {/* Soft Ambient Light for crystal clear visibility */}
+      <ambientLight intensity={0.9} color="#ffffff" />
       
-      {/* Sun / Key Directional Light with Optimized 1024 Shadows for WebGL Performance */}
+      {/* Crisp Sun / Key Directional Light with Sharp Shadows */}
       <directionalLight
-        position={[35, 55, 30]}
-        intensity={1.75}
+        position={[40, 55, 30]}
+        intensity={1.8}
+        color="#ffffff"
         castShadow
-        shadow-mapSize-width={1024}
-        shadow-mapSize-height={1024}
+        shadow-mapSize-width={2048}
+        shadow-mapSize-height={2048}
         shadow-camera-near={0.5}
-        shadow-camera-far={200}
-        shadow-camera-left={-60}
-        shadow-camera-right={60}
-        shadow-camera-top={60}
-        shadow-camera-bottom={-60}
-        shadow-bias={-0.0004}
+        shadow-camera-far={220}
+        shadow-camera-left={-65}
+        shadow-camera-right={65}
+        shadow-camera-top={65}
+        shadow-camera-bottom={-65}
+        shadow-bias={-0.0003}
       />
 
-      {/* Subtle fill light */}
-      <directionalLight position={[-25, 20, -25]} intensity={0.4} color="#bae6fd" />
+      {/* Clear Fill Light */}
+      <directionalLight position={[-30, 25, -25]} intensity={0.5} color="#bae6fd" />
     </>
   );
 }
@@ -64,20 +65,20 @@ export function GameScene({
     <div style={{ width: '100%', height: '100%', position: 'relative' }}>
       <Canvas
         shadows
+        dpr={[1, 2]} // Crisp native resolution on Retina & 4K displays
         camera={{ position: [0, 9.5, 17], fov: 50 }}
         style={{ width: '100%', height: '100%', display: 'block' }}
+        gl={{ antialias: true, powerPreference: 'high-performance' }}
       >
-        {/* Cambodian Tropical Sun & Blue Sky */}
+        {/* Crystal Clear Blue Sky */}
         <Sky
           distance={450000}
-          sunPosition={[25, 35, 20]}
-          inclination={0.49}
+          sunPosition={[30, 40, 25]}
+          inclination={0.48}
           azimuth={0.25}
-          turbidity={6}
-          rayleigh={1.2}
+          turbidity={4}
+          rayleigh={0.8}
         />
-        {/* Expansive tropical fog suited for the 400m adventure map */}
-        <fog attach="fog" args={['#e0f2fe', 60, 320]} />
 
         <SceneLighting />
 
