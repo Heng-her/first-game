@@ -4,6 +4,11 @@ class SoundFXManager {
   private isMuted: boolean = false;
   private ambientGain: GainNode | null = null;
   private ambientOscs: OscillatorNode[] = [];
+  private noiseBuffer: AudioBuffer | null = null;
+
+  unlockAudio() {
+    this.initCtx();
+  }
 
   private initCtx() {
     if (!this.ctx && typeof window !== "undefined") {
@@ -12,6 +17,81 @@ class SoundFXManager {
     }
     if (this.ctx && this.ctx.state === "suspended") {
       this.ctx.resume();
+    }
+  }
+
+  private getNoiseBuffer(): AudioBuffer | null {
+    if (!this.ctx) return null;
+    if (!this.noiseBuffer) {
+      const bufferSize = Math.floor(this.ctx.sampleRate * 0.15);
+      const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const output = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+      this.noiseBuffer = buffer;
+    }
+    return this.noiseBuffer;
+  }
+
+  /**
+   * Realistic footsteps on road/pavement surface for walking and running.
+   * Alternates subtle pitch between left and right feet to create an authentic human pace.
+   */
+  playFootstep(isRunning: boolean = false, isRightFoot: boolean = false) {
+    if (this.isMuted) return;
+    try {
+      this.initCtx();
+      if (!this.ctx) return;
+
+      const now = this.ctx.currentTime;
+
+      // 1. Transient low-frequency thump (shoe sole impact on asphalt)
+      const osc = this.ctx.createOscillator();
+      const oscGain = this.ctx.createGain();
+
+      const baseFreq = isRunning ? 96 : 82;
+      const footVariance = isRightFoot ? 1.06 : 0.94;
+      const startFreq = baseFreq * footVariance;
+
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(startFreq, now);
+      osc.frequency.exponentialRampToValueAtTime(32, now + (isRunning ? 0.075 : 0.055));
+
+      const oscVol = isRunning ? 0.08 : 0.048;
+      oscGain.gain.setValueAtTime(oscVol, now);
+      oscGain.gain.exponentialRampToValueAtTime(0.0001, now + (isRunning ? 0.075 : 0.055));
+
+      osc.connect(oscGain);
+      oscGain.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + (isRunning ? 0.08 : 0.06));
+
+      // 2. High-frequency pavement friction/tap (shoe tread contact)
+      const noise = this.getNoiseBuffer();
+      if (noise) {
+        const noiseSource = this.ctx.createBufferSource();
+        noiseSource.buffer = noise;
+
+        const noiseFilter = this.ctx.createBiquadFilter();
+        noiseFilter.type = "bandpass";
+        noiseFilter.frequency.setValueAtTime(isRunning ? 920 : 720, now);
+        noiseFilter.Q.setValueAtTime(2.2, now);
+
+        const noiseGain = this.ctx.createGain();
+        const noiseVol = isRunning ? 0.055 : 0.032;
+        noiseGain.gain.setValueAtTime(noiseVol, now);
+        noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + (isRunning ? 0.045 : 0.035));
+
+        noiseSource.connect(noiseFilter);
+        noiseFilter.connect(noiseGain);
+        noiseGain.connect(this.ctx.destination);
+
+        noiseSource.start(now);
+        noiseSource.stop(now + (isRunning ? 0.045 : 0.035));
+      }
+    } catch {
+      // Audio autoplay restriction
     }
   }
 

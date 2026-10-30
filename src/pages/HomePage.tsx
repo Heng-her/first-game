@@ -10,10 +10,13 @@ export function HomePage() {
   return (
     <div
       style={{
-        position: "relative",
-        width: "100vw",
-        height: "100vh",
+        position: "fixed",
+        inset: 0,
+        width: "100%",
+        height: "100dvh",
         overflow: "hidden",
+        margin: 0,
+        boxSizing: "border-box",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -22,11 +25,12 @@ export function HomePage() {
         background: "radial-gradient(ellipse at 50% 35%, #0f172a 0%, #020617 100%)",
         color: "#f8fafc",
         fontFamily: "var(--font-km)",
-        padding: "24px",
+        padding:
+          "max(16px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left))",
       }}
     >
       {/* 1. HERO TAG */}
-      <div style={{ marginBottom: "20px" }}>
+      <div style={{ marginBottom: "clamp(8px, 2.5vh, 20px)" }}>
         <Badge variant="gold">
           <Sparkles size={14} style={{ marginRight: 6 }} />
           ហ្គេមផ្សងព្រេងទេសចរណ៍កម្ពុជា 3D
@@ -34,13 +38,13 @@ export function HomePage() {
       </div>
 
       {/* 2. HERO HEADING & SUBTITLE */}
-      <div style={{ maxWidth: 780, marginBottom: "36px" }}>
+      <div style={{ maxWidth: 780, marginBottom: "clamp(14px, 3.5vh, 32px)", padding: "0 8px" }}>
         <h1
           style={{
-            fontSize: "clamp(34px, 5.5vw, 56px)",
+            fontSize: "clamp(26px, 5.2vw, 54px)",
             fontWeight: 800,
             lineHeight: 1.25,
-            marginBottom: 16,
+            marginBottom: "clamp(8px, 1.8vh, 16px)",
             background: "linear-gradient(135deg, #fef08a 0%, #f59e0b 50%, #d97706 100%)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
@@ -50,9 +54,9 @@ export function HomePage() {
         </h1>
         <p
           style={{
-            fontSize: "17px",
+            fontSize: "clamp(14px, 2.2vw, 17px)",
             color: "#94a3b8",
-            lineHeight: 1.6,
+            lineHeight: 1.5,
             maxWidth: 640,
             margin: "0 auto",
           }}
@@ -72,9 +76,9 @@ export function HomePage() {
           navigate("/roads");
         }}
         style={{
-          minWidth: 240,
-          height: 52,
-          fontSize: "17px",
+          minWidth: "clamp(200px, 35vw, 240px)",
+          height: "clamp(46px, 6vh, 52px)",
+          fontSize: "clamp(15px, 2vw, 17px)",
           fontWeight: 700,
           boxShadow: "0 8px 25px rgba(245, 158, 11, 0.35)",
         }}

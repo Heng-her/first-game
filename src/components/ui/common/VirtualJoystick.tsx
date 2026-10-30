@@ -1,7 +1,14 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import type { RefObject } from "react";
-import { Zap, ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Zap,
+  ChevronUp,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import type { VirtualInput } from "../../../data/soldierConfig";
+import { soundFX } from "../../../utils/audio";
 
 interface VirtualJoystickProps {
   virtualInputRef: RefObject<VirtualInput>;
@@ -10,7 +17,10 @@ interface VirtualJoystickProps {
 export function VirtualJoystick({ virtualInputRef }: VirtualJoystickProps) {
   // Mobile / Touch device detection
   const [isMobile, setIsMobile] = useState<boolean>(false);
-  const [knobPos, setKnobPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [knobPos, setKnobPos] = useState<{ x: number; y: number }>({
+    x: 0,
+    y: 0,
+  });
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [isSprinting, setIsSprinting] = useState<boolean>(false);
 
@@ -55,13 +65,15 @@ export function VirtualJoystick({ virtualInputRef }: VirtualJoystickProps) {
       virtualInputRef.current.forward = forward;
       virtualInputRef.current.side = side;
       // Auto-sprint if dragged to maximum extent or sprint button held
-      virtualInputRef.current.isRunning = sprinting || dist >= MAX_RADIUS * 0.92;
+      virtualInputRef.current.isRunning =
+        sprinting || dist >= MAX_RADIUS * 0.92;
     },
-    [MAX_RADIUS, virtualInputRef]
+    [MAX_RADIUS, virtualInputRef],
   );
 
   // Handle Touch on the Circular Movement Base
   const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    soundFX.unlockAudio();
     if (touchIdRef.current !== null) return;
     const touch = e.changedTouches[0];
     touchIdRef.current = touch.identifier;
@@ -132,6 +144,7 @@ export function VirtualJoystick({ virtualInputRef }: VirtualJoystickProps) {
 
   // Toggle Sprint Button
   const handleSprintStart = () => {
+    soundFX.unlockAudio();
     setIsSprinting(true);
     if (virtualInputRef.current) {
       virtualInputRef.current.isRunning = true;
@@ -294,4 +307,3 @@ export function VirtualJoystick({ virtualInputRef }: VirtualJoystickProps) {
     </>
   );
 }
-

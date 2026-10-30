@@ -5,6 +5,7 @@ import * as THREE from "three";
 import { clone as cloneSkeleton } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { MOVEMENT_CONFIG, type SoldierState, type VirtualInput } from "../../data/soldierConfig";
 import { resolveMovementCollision } from "../../utils/collisionSystem";
+import { soundFX } from "../../utils/audio";
 
 interface PlayableSoldierProps {
   soldierStateRef: React.RefObject<SoldierState>;
@@ -25,6 +26,10 @@ export function PlayableSoldier({
   const groupRef = useRef<THREE.Group>(null);
   const currentActionRef = useRef<"Idle" | "Walk" | "Run">("Idle");
   const currentSpeedRef = useRef<number>(0);
+
+  // Footstep audio synchronization tracking
+  const footstepTimerRef = useRef<number>(0);
+  const footstepSideRef = useRef<boolean>(false);
 
   // Active keyboard inputs
   const keysPressed = useRef<{ [key: string]: boolean }>({});
@@ -106,6 +111,7 @@ export function PlayableSoldier({
 
       const key = e.key.toLowerCase();
       keysPressed.current[key] = true;
+      soundFX.unlockAudio();
 
       // Prevent browser default scroll for game controls
       if (
@@ -210,6 +216,22 @@ export function PlayableSoldier({
         nextAction.reset().fadeIn(0.2).play();
         currentActionRef.current = nextActionName;
       }
+    }
+
+    // -------------------------------------------------------------------------
+    // Footstep Sound Synchronization (Walk vs Run Cadence)
+    // -------------------------------------------------------------------------
+    if (isMoving && currentSpeedRef.current > 0.15) {
+      const stepInterval = isRunning ? 0.29 : 0.46;
+      footstepTimerRef.current += dt;
+
+      if (footstepTimerRef.current >= stepInterval) {
+        footstepTimerRef.current = 0;
+        footstepSideRef.current = !footstepSideRef.current;
+        soundFX.playFootstep(isRunning, footstepSideRef.current);
+      }
+    } else {
+      footstepTimerRef.current = 0.22;
     }
 
     // -------------------------------------------------------------------------

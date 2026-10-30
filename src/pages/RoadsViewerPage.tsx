@@ -33,10 +33,13 @@ export function RoadsViewerPage() {
   return (
     <div
       style={{
-        position: "relative",
-        width: "100vw",
-        height: "100vh",
+        position: "fixed",
+        inset: 0,
+        width: "100%",
+        height: "100dvh",
         overflow: "hidden",
+        margin: 0,
+        padding: 0,
         background:
           "radial-gradient(ellipse at 50% 30%, #0f172a 0%, #020617 100%)",
         color: "#f8fafc",
@@ -83,14 +86,16 @@ export function RoadsViewerPage() {
       {/* 2. MOBILE TOUCH CIRCLE CONTROLS (Hidden on Desktop, Visible as Circular Joystick on Mobile) */}
       <VirtualJoystick virtualInputRef={virtualInputRef} />
 
-      {/* 3. FULLSCREEN 3D CANVAS VIEWPORT */}
+      {/* 3. FULLSCREEN 3D CANVAS VIEWPORT (Zero margin / Seamless edge-to-edge) */}
       <div
         style={{
+          position: "absolute",
+          inset: 0,
           width: "100%",
           height: "100%",
-          position: "absolute",
-          top: 0,
-          left: 0,
+          margin: 0,
+          padding: 0,
+          overflow: "hidden",
         }}
       >
         <Canvas
@@ -98,6 +103,20 @@ export function RoadsViewerPage() {
           camera={{
             position: [0, 2.5, 4.8],
             fov: 45,
+          }}
+          gl={{
+            antialias: true,
+            powerPreference: "high-performance",
+          }}
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            margin: 0,
+            padding: 0,
+            display: "block",
           }}
         >
           {/* Ambient Lighting */}

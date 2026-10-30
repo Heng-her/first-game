@@ -11,10 +11,13 @@ export function GamePlayPage() {
   return (
     <div
       style={{
-        position: "relative",
-        width: "100vw",
-        height: "100vh",
+        position: "fixed",
+        inset: 0,
+        width: "100%",
+        height: "100dvh",
         overflow: "hidden",
+        margin: 0,
+        padding: 0,
         background: "radial-gradient(ellipse at 50% 40%, #0f172a 0%, #030712 100%)",
       }}
     >

@@ -3,9 +3,15 @@ import { Smartphone } from "lucide-react";
 
 export function RotateDevicePrompt() {
   const [isPortrait, setIsPortrait] = useState<boolean>(false);
+  const [isDismissed, setIsDismissed] = useState<boolean>(false);
 
   useEffect(() => {
     const checkOrientation = () => {
+      // Don't show on home page
+      if (window.location.pathname === "/") {
+        setIsPortrait(false);
+        return;
+      }
       // Check if window is taller than wide and is in a mobile-like dimension
       const portrait = window.innerHeight > window.innerWidth && window.innerWidth <= 768;
       setIsPortrait(portrait);
@@ -21,7 +27,7 @@ export function RotateDevicePrompt() {
     };
   }, []);
 
-  if (!isPortrait) return null;
+  if (!isPortrait || isDismissed) return null;
 
   return (
     <div
@@ -93,10 +99,27 @@ export function RotateDevicePrompt() {
           color: "#94a3b8",
           maxWidth: 320,
           lineHeight: 1.6,
+          marginBottom: 16,
         }}
       >
         Please rotate your mobile device to Landscape / Horizontal mode to enjoy the full 3D game experience.
       </p>
+
+      <button
+        onClick={() => setIsDismissed(true)}
+        style={{
+          padding: "8px 22px",
+          borderRadius: 24,
+          background: "rgba(255, 255, 255, 0.12)",
+          border: "1px solid rgba(255, 255, 255, 0.25)",
+          color: "#f1f5f9",
+          fontSize: 13,
+          fontWeight: 700,
+          cursor: "pointer",
+        }}
+      >
+        បន្តលេងក្នុងទម្រង់នេះ (Continue anyway)
+      </button>
 
       <style>{`
         @keyframes rotatePhone {
