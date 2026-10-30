@@ -7,7 +7,6 @@ import { CharacterShowcase } from "../components/ui/lobby/CharacterShowcase";
 import { PlayGameButton } from "../components/ui/lobby/PlayGameButton";
 import { StagesOverlay } from "../components/ui/lobby/StagesOverlay";
 import { SettingsModal } from "../components/ui/lobby/SettingsModal";
-import { GuidebookModal } from "../components/ui/lobby/GuidebookModal";
 
 export function HomePage() {
   const navigate = useNavigate();
@@ -22,7 +21,6 @@ export function HomePage() {
   // Modal overlays
   const [isStagesOpen, setIsStagesOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isGuideOpen, setIsGuideOpen] = useState(false);
 
   // Active character
   const activeCharacter =
@@ -54,7 +52,6 @@ export function HomePage() {
       <TopGameBar
         title="SELECT CHARACTER"
         subtitle="ជ្រើសរើសតួអង្គ"
-        onOpenGuide={() => setIsGuideOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)}
         onExit={() => alert("អរគុណសម្រាប់ការលេង! (Thank you for playing!)")}
       />
@@ -65,7 +62,6 @@ export function HomePage() {
         selectedId={selectedCharacterId}
         onSelectCharacter={handleSelectCharacter}
         onViewStages={() => setIsStagesOpen(true)}
-        onCreateNew={() => setIsGuideOpen(true)}
       />
 
       {/* 3. Center Screen: 3D Character Showcase & Atmosphere */}
@@ -90,11 +86,6 @@ export function HomePage() {
       {/* 6. Settings Modal */}
       {isSettingsOpen && (
         <SettingsModal onClose={() => setIsSettingsOpen(false)} />
-      )}
-
-      {/* 7. Guidebook Modal */}
-      {isGuideOpen && (
-        <GuidebookModal onClose={() => setIsGuideOpen(false)} />
       )}
     </div>
   );
