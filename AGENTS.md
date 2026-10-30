@@ -220,3 +220,29 @@ A feature is complete only when:
 2. **កម្រិតក្រាហ្វិកកំពូល (Nanite & Lumen Compatibility):**
    - សម្រាប់ម៉ូដែលចម្លាក់លម្អិតកម្រិតខ្ពស់ (High-poly Sculpt) នៅក្នុង Blender ត្រូវរក្សាទុកឯកសារមេ (Master `.blend` ឬ High-res `.fbx` / `.usd`) សម្រាប់ប្រើជាមួយ Unreal Engine 5 Nanite ខណៈពេលដែល export កំណែស្រាល (`.glb`) សម្រាប់ Three.js Web Game។
 
+
+
+## 12. ស្ថាបត្យកម្មកូដស្អាត និង Reusable Component Architecture (Clean Code & Modularity)
+
+1. **កូដមានរបៀបរាបរយ (Clean & Well-Organized Code):**
+   - កូដទាំងអស់ត្រូវតែរៀបចំជាម៉ូឌុល (Modularized) មិនសរសេរកូដគរគ្នាក្នុង file តែមួយឡើយ (ជៀសវាង Giant Monolithic Files)។
+   - បែងចែក Component តាមកម្រិតតួនាទីច្បាស់លាស់៖
+     - `src/components/ui/common/`: Reusable Atomic Components (ប៊ូតុង Button, កាត Card, ប្រអប់សារ Modal/Dialog, ផ្លាក Badge, របារ ProgressBar)។
+     - `src/components/ui/screens/`: ផ្ទាំងពេញអេក្រង់ (HomeScreen, CharacterSelectScreen, StageSelectScreen)។
+     - `src/components/ui/diegetic/`: UI បែបរូបរាងជីវិតពិត (PassportBook, BrassCompass, PaperMap)។
+     - `src/components/game/`: ផ្នែក Canvas 3D, តួអង្គ, កាមេរ៉ា, និងបរិស្ថាន។
+2. **ការបង្កើត Component សម្រាប់ Reusability:**
+   - រាល់ reusable component ត្រូវកំណត់ Typed Props (TypeScript Interface) ច្បាស់លាស់ អាចទទួល props បត់បែនតាមតម្រូវការ (Flexible & Generic)។
+   - ជៀសវាងការចង string ឬពណ៌ជាប់រឹង (Hardcoded) នៅក្នុង component តូចៗ។
+
+## 13. ស្តង់ដារ UI & Game Screen Flow (លំហូរផ្ទាំងបញ្ជា និងវគ្គលេង)
+
+គម្រោងត្រូវមាន Game State Flow យ៉ាងច្បាស់លាស់ដើម្បីសម្រួលដល់បទពិសោធន៍អ្នកលេង៖
+1. **Home Page (ទំព័រដើម):**
+   - បង្ហាញចំណងជើងហ្គេម ទេសភាពស្វាគមន៍ (Hero Backdrop / Angkor visual) ប៊ូតុងចាប់ផ្តើមលេង (Start / Play Adventure) ប៊ូតុង Settings និងព័ត៌មានអំពីហ្គេម។
+2. **Character Selection (ការជ្រើសរើសតួអង្គ):**
+   - ផ្ទាំងមើល និងជ្រើសរើសតួអង្គ (ឧ. តួអង្គប្រុស/ស្រី សម្លៀកបំពាក់បែបប្រពៃណីខ្មែរ ឬភ្ញៀវទេសចរ) ព្រមទាំងបង្ហាញលក្ខណៈពិសេស ឬព័ត៌មានសង្ខេបរបស់តួអង្គ។
+3. **Stage / Level Selection (ការជ្រើសរើសវគ្គលេង):**
+   - ផ្ទាំងជ្រើសរើសវគ្គទេសចរណ៍ និងរបៀបលេង (ឧទាហរណ៍៖ រុករកប្រាសាទបុរាណ Angkor Treasure Hunt, បើកបរកង់បី Siem Reap Tuk-Tuk, ជិះទូកលើបឹងទន្លេសាប Tonle Sap Boat, ដើរព្រៃភ្នំគូលែន Kulen Nature Trail)។
+4. **Gameplay Screen & Diegetic UI:**
+   - ដំណើរការចូលទៅកាន់វគ្គដែលបានជ្រើសរើស ជាមួយតួអង្គដែលបានជ្រើសរើស ដោយភ្ជាប់ជាមួយ Diegetic HUD (លិខិតឆ្លងដែន Passport / ត្រីវិស័យ Brass Compass) និងប៊ូតុងត្រឡប់មកកាន់ Menu វិញគ្រប់ពេលវេលា។
