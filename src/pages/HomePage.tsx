@@ -16,7 +16,8 @@ export function HomePage() {
   const [selectedCharacterId, setSelectedCharacterId] = useState<string>(() => {
     return localStorage.getItem("selectedCharacterId") || "khmer-male";
   });
-  const [selectedStageId, setSelectedStageId] = useState<string>("angkor-treasure");
+  const [selectedStageId, setSelectedStageId] =
+    useState<string>("angkor-treasure");
 
   // Modal overlays
   const [isStagesOpen, setIsStagesOpen] = useState(false);
@@ -25,7 +26,8 @@ export function HomePage() {
 
   // Active character
   const activeCharacter =
-    CHARACTERS_DATA.find((c) => c.id === selectedCharacterId) || CHARACTERS_DATA[0];
+    CHARACTERS_DATA.find((c) => c.id === selectedCharacterId) ||
+    CHARACTERS_DATA[0];
 
   const handleSelectCharacter = (id: string) => {
     setSelectedCharacterId(id);
@@ -43,7 +45,8 @@ export function HomePage() {
         width: "100vw",
         height: "100vh",
         overflow: "hidden",
-        background: "radial-gradient(ellipse at 50% 40%, #1e293b 0%, #0a0e17 80%)",
+        background:
+          "radial-gradient(ellipse at 50% 40%, #1e293b 0%, #0a0e17 80%)",
         color: "#f8fafc",
       }}
     >
@@ -89,7 +92,7 @@ export function HomePage() {
         <SettingsModal onClose={() => setIsSettingsOpen(false)} />
       )}
 
-      {/* 7. Lore / Guidebook Modal */}
+      {/* 7. Guidebook Modal */}
       {isGuideOpen && (
         <GuidebookModal onClose={() => setIsGuideOpen(false)} />
       )}

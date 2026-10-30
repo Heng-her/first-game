@@ -2,6 +2,8 @@
 class SoundFXManager {
   private ctx: AudioContext | null = null;
   private isMuted: boolean = false;
+  private ambientGain: GainNode | null = null;
+  private ambientOscs: OscillatorNode[] = [];
 
   private initCtx() {
     if (!this.ctx && typeof window !== "undefined") {
@@ -77,11 +79,71 @@ class SoundFXManager {
     }
   }
 
+  // Start peaceful ambient atmospheric sound
+  startAmbient() {
+    if (this.ambientOscs.length > 0 || this.isMuted) return;
+    try {
+      this.initCtx();
+      if (!this.ctx) return;
+      const masterGain = this.ctx.createGain();
+      masterGain.gain.setValueAtTime(0.001, this.ctx.currentTime);
+      masterGain.gain.exponentialRampToValueAtTime(0.05, this.ctx.currentTime + 2);
+      masterGain.connect(this.ctx.destination);
+      this.ambientGain = masterGain;
+
+      // Ancient temple drone chords (C, G, E harmonic overtone)
+      const frequencies = [130.81, 196.0, 261.63, 329.63];
+      frequencies.forEach((freq) => {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+        osc.connect(masterGain);
+        osc.start();
+        this.ambientOscs.push(osc);
+      });
+    } catch {
+      // Autoplay policy
+    }
+  }
+
+  // Stop ambient sound
+  stopAmbient() {
+    if (this.ambientGain && this.ctx) {
+      try {
+        this.ambientGain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + 0.5);
+        setTimeout(() => {
+          this.ambientOscs.forEach((o) => {
+            try {
+              o.stop();
+              o.disconnect();
+            } catch {
+              // Ignore
+            }
+          });
+          this.ambientOscs = [];
+          this.ambientGain = null;
+        }, 500);
+      } catch {
+        this.ambientOscs = [];
+        this.ambientGain = null;
+      }
+    }
+  }
+
   toggleMute(): boolean {
     this.isMuted = !this.isMuted;
+    if (this.isMuted) {
+      this.stopAmbient();
+    } else {
+      this.startAmbient();
+    }
+    return this.isMuted;
+  }
+
+  getMuted(): boolean {
     return this.isMuted;
   }
 }
 
 export const soundFX = new SoundFXManager();
-
