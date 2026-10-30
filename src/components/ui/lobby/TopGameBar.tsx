@@ -1,4 +1,4 @@
-import { MessageSquare, Settings, Power } from "lucide-react";
+import { MessageSquare, Settings, Power, ArrowLeft } from "lucide-react";
 import { soundFX } from "../../../utils/audio";
 
 export interface TopGameBarProps {
@@ -17,10 +17,10 @@ export function TopGameBar({
   onExit,
 }: TopGameBarProps) {
   const iconBtnStyle: React.CSSProperties = {
-    width: 38,
-    height: 38,
+    width: "clamp(30px, 4.5vh, 36px)",
+    height: "clamp(30px, 4.5vh, 36px)",
     borderRadius: 6,
-    background: "rgba(10, 16, 26, 0.75)",
+    background: "rgba(10, 16, 26, 0.8)",
     border: "1px solid rgba(255, 255, 255, 0.2)",
     color: "#e2e8f0",
     display: "flex",
@@ -28,7 +28,7 @@ export function TopGameBar({
     justifyContent: "center",
     cursor: "pointer",
     transition: "all 0.15s ease",
-    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4)",
+    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.5)",
   };
 
   return (
@@ -38,7 +38,7 @@ export function TopGameBar({
         top: 0,
         left: 0,
         right: 0,
-        padding: "16px 24px",
+        padding: "max(8px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 6px max(16px, env(safe-area-inset-left))",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
@@ -46,48 +46,57 @@ export function TopGameBar({
         pointerEvents: "none",
       }}
     >
-      {/* Top-Left: [ESC] SELECT CHARACTER */}
+      {/* Top-Left: [ESC / Arrow] SELECT CHARACTER */}
       <div
         style={{
           pointerEvents: "auto",
           display: "flex",
           alignItems: "center",
-          gap: 12,
+          gap: 8,
         }}
       >
-        {/* ESC Key pill */}
+        {/* ESC Key pill (Touch friendly) */}
         <div
+          onClick={() => {
+            soundFX.playClick();
+            onExit?.();
+          }}
           style={{
-            padding: "3px 8px",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 4,
+            padding: "2px 7px",
             borderRadius: 4,
-            background: "rgba(15, 23, 42, 0.85)",
+            background: "rgba(15, 23, 42, 0.9)",
             border: "1px solid rgba(255, 255, 255, 0.35)",
             boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 2px 6px rgba(0,0,0,0.5)",
-            fontSize: 11,
+            fontSize: 10,
             fontWeight: 800,
             color: "#e2e8f0",
-            letterSpacing: 1,
+            letterSpacing: 0.8,
+            cursor: "pointer",
           }}
         >
-          ESC
+          <ArrowLeft size={11} />
+          <span>ESC</span>
         </div>
 
-        <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
           <span
             style={{
-              fontSize: 16,
+              fontSize: "clamp(12px, 1.8vw, 15px)",
               fontWeight: 900,
               color: "#f8fafc",
-              letterSpacing: 2,
+              letterSpacing: 1.5,
               textTransform: "uppercase",
-              textShadow: "0 2px 6px rgba(0, 0, 0, 0.9)",
+              textShadow: "0 2px 4px rgba(0, 0, 0, 0.9)",
             }}
           >
             {title}
           </span>
           <span
             style={{
-              fontSize: 12,
+              fontSize: "clamp(10px, 1.4vw, 12px)",
               fontWeight: 700,
               color: "#fbbf24",
               opacity: 0.85,
@@ -104,20 +113,20 @@ export function TopGameBar({
           pointerEvents: "auto",
           display: "flex",
           alignItems: "center",
-          gap: 8,
+          gap: 6,
         }}
       >
         {/* Lore / Chat */}
         <button
           style={iconBtnStyle}
-          title="ព័ត៌មាន និងប្រវត្តិ (Lore / Guide)"
+          title="មគ្គុទ្ទេសក៍ (Guide / Lore)"
           onClick={() => {
             soundFX.playClick();
             onOpenGuide?.();
           }}
           onMouseEnter={() => soundFX.playHover()}
         >
-          <MessageSquare size={17} />
+          <MessageSquare size={14} />
         </button>
 
         {/* Settings */}
@@ -130,7 +139,7 @@ export function TopGameBar({
           }}
           onMouseEnter={() => soundFX.playHover()}
         >
-          <Settings size={17} />
+          <Settings size={14} />
         </button>
 
         {/* Exit */}
@@ -143,7 +152,7 @@ export function TopGameBar({
           }}
           onMouseEnter={() => soundFX.playHover()}
         >
-          <Power size={17} />
+          <Power size={14} />
         </button>
       </div>
     </header>

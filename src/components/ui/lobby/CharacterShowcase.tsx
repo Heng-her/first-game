@@ -17,6 +17,7 @@ export function CharacterShowcase({ character }: CharacterShowcaseProps) {
         justifyContent: "center",
         pointerEvents: "none",
         zIndex: 10,
+        paddingLeft: "clamp(120px, 16vw, 180px)", // Offsets character toward center-right to balance left panel on landscape mobile
       }}
     >
       {/* Dynamic Background Atmosphere - Warm Angkor Sunlight & Landscape */}
@@ -24,7 +25,7 @@ export function CharacterShowcase({ character }: CharacterShowcaseProps) {
         style={{
           position: "absolute",
           inset: 0,
-          background: "radial-gradient(ellipse at 50% 35%, rgba(245, 158, 11, 0.15) 0%, rgba(15, 23, 42, 0) 65%), linear-gradient(180deg, rgba(8, 14, 25, 0.4) 0%, rgba(5, 8, 15, 0.85) 100%)",
+          background: "radial-gradient(ellipse at 55% 40%, rgba(245, 158, 11, 0.16) 0%, rgba(15, 23, 42, 0) 65%), linear-gradient(180deg, rgba(8, 14, 25, 0.4) 0%, rgba(5, 8, 15, 0.88) 100%)",
           zIndex: 1,
         }}
       />
@@ -34,12 +35,12 @@ export function CharacterShowcase({ character }: CharacterShowcaseProps) {
         style={{
           position: "absolute",
           top: "-20%",
-          left: "30%",
-          width: "40%",
-          height: "80%",
-          background: "radial-gradient(ellipse at 50% 0%, rgba(254, 240, 138, 0.18) 0%, rgba(245, 158, 11, 0) 70%)",
+          left: "40%",
+          width: "45%",
+          height: "90%",
+          background: "radial-gradient(ellipse at 50% 0%, rgba(254, 240, 138, 0.16) 0%, rgba(245, 158, 11, 0) 70%)",
           transform: "rotate(-10deg)",
-          filter: "blur(40px)",
+          filter: "blur(35px)",
           pointerEvents: "none",
           zIndex: 2,
         }}
@@ -54,30 +55,29 @@ export function CharacterShowcase({ character }: CharacterShowcaseProps) {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          marginTop: 20,
+          marginTop: 10,
         }}
       >
         {/* Ground Pedestal Shadow */}
         <div
           style={{
             position: "absolute",
-            bottom: -30,
-            width: 320,
-            height: 48,
+            bottom: -16,
+            width: "clamp(180px, 28vw, 260px)",
+            height: "clamp(24px, 4vh, 36px)",
             borderRadius: "50%",
-            background: "radial-gradient(ellipse at 50% 50%, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0) 75%)",
-            filter: "blur(6px)",
+            background: "radial-gradient(ellipse at 50% 50%, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 75%)",
+            filter: "blur(5px)",
             zIndex: 1,
           }}
         />
 
-        {/* Character Avatar / High-Fidelity Figure */}
+        {/* Character Avatar / High-Fidelity Figure scaled for mobile landscape */}
         <div
           style={{
             position: "relative",
             zIndex: 5,
-            width: 440,
-            height: 540,
+            height: "clamp(210px, 72vh, 320px)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -88,27 +88,15 @@ export function CharacterShowcase({ character }: CharacterShowcaseProps) {
             src="/models/characters/image.png"
             alt={character.nameKm}
             style={{
-              maxHeight: "100%",
-              maxWidth: "100%",
+              height: "100%",
+              width: "auto",
               objectFit: "contain",
-              filter: "drop-shadow(0 15px 30px rgba(0, 0, 0, 0.7))",
+              filter: "drop-shadow(0 10px 20px rgba(0, 0, 0, 0.75))",
             }}
             onError={(e) => {
-              // Graceful fallback if image is loading or missing
               (e.currentTarget as HTMLImageElement).style.display = "none";
             }}
           />
-
-          {/* Backup Big Avatar Icon if image is hidden */}
-          <div
-            style={{
-              display: "none", // used as fallback if needed
-              fontSize: 140,
-              filter: "drop-shadow(0 12px 24px rgba(0,0,0,0.6))",
-            }}
-          >
-            {character.avatarIcon}
-          </div>
         </div>
 
         {/* Character Floating Nameplate & Status Badge */}
@@ -117,8 +105,8 @@ export function CharacterShowcase({ character }: CharacterShowcaseProps) {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            gap: 6,
-            marginTop: 10,
+            gap: 4,
+            marginTop: 4,
             zIndex: 12,
           }}
         >
@@ -126,48 +114,48 @@ export function CharacterShowcase({ character }: CharacterShowcaseProps) {
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 8,
-              padding: "6px 18px",
-              borderRadius: 20,
+              gap: 6,
+              padding: "4px 12px",
+              borderRadius: 16,
               background: "rgba(10, 16, 26, 0.85)",
-              border: "1.5px solid rgba(245, 158, 11, 0.4)",
-              boxShadow: "0 8px 24px rgba(0, 0, 0, 0.6)",
+              border: "1px solid rgba(245, 158, 11, 0.4)",
+              boxShadow: "0 4px 16px rgba(0, 0, 0, 0.6)",
               backdropFilter: "blur(8px)",
             }}
           >
-            <Sparkles size={14} color="#fbbf24" />
+            <Sparkles size={12} color="#fbbf24" />
             <span
               style={{
-                fontSize: 16,
+                fontSize: "clamp(12px, 1.6vw, 14px)",
                 fontWeight: 900,
                 color: "#f8fafc",
-                letterSpacing: 0.5,
+                letterSpacing: 0.3,
               }}
             >
               {character.nameKm}
             </span>
-            <span style={{ fontSize: 13, color: "#fbbf24", fontWeight: 700 }}>
+            <span style={{ fontSize: "clamp(10px, 1.3vw, 12px)", color: "#fbbf24", fontWeight: 700 }}>
               ({character.roleKm})
             </span>
           </div>
 
           {/* Stat Pills */}
-          <div style={{ display: "flex", gap: 10 }}>
+          <div style={{ display: "flex", gap: 6 }}>
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 5,
-                padding: "3px 10px",
-                borderRadius: 12,
+                gap: 4,
+                padding: "2px 7px",
+                borderRadius: 8,
                 background: "rgba(255, 255, 255, 0.05)",
                 border: "1px solid rgba(255, 255, 255, 0.1)",
-                fontSize: 11,
+                fontSize: 9,
                 color: "#94a3b8",
                 fontWeight: 700,
               }}
             >
-              <Zap size={11} color="#38bdf8" />
+              <Zap size={10} color="#38bdf8" />
               <span>Speed: 100%</span>
             </div>
 
@@ -175,17 +163,17 @@ export function CharacterShowcase({ character }: CharacterShowcaseProps) {
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 5,
-                padding: "3px 10px",
-                borderRadius: 12,
+                gap: 4,
+                padding: "2px 7px",
+                borderRadius: 8,
                 background: "rgba(255, 255, 255, 0.05)",
                 border: "1px solid rgba(255, 255, 255, 0.1)",
-                fontSize: 11,
+                fontSize: 9,
                 color: "#94a3b8",
                 fontWeight: 700,
               }}
             >
-              <Shield size={11} color="#10b981" />
+              <Shield size={10} color="#10b981" />
               <span>Heritage: Angkor</span>
             </div>
           </div>
@@ -198,7 +186,7 @@ export function CharacterShowcase({ character }: CharacterShowcaseProps) {
             transform: translateY(0px);
           }
           50% {
-            transform: translateY(-8px);
+            transform: translateY(-6px);
           }
         }
       `}</style>

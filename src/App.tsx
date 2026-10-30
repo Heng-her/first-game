@@ -4,12 +4,16 @@ import { AboutPage } from "./pages/AboutPage";
 import { CharacterSelectPage } from "./pages/CharacterSelectPage";
 import { StageSelectPage } from "./pages/StageSelectPage";
 import { GamePlayPage } from "./pages/GamePlayPage";
+import { RotateDevicePrompt } from "./components/ui/common/RotateDevicePrompt";
 
 export default function App() {
   return (
     <BrowserRouter>
+      {/* Automatic horizontal orientation guard for mobile */}
+      <RotateDevicePrompt />
+
       <Routes>
-        {/* Main Home Page */}
+        {/* Main Home Game Lobby (Mobile Horizontal) */}
         <Route path="/" element={<HomePage />} />
 
         {/* About & Cultural Education Page */}

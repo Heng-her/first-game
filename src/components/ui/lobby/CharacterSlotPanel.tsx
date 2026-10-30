@@ -18,42 +18,45 @@ export function CharacterSlotPanel({
   onViewStages,
   onCreateNew,
 }: CharacterSlotPanelProps) {
-  const [region] = useState("សៀមរាប • អង្គរវត្ត (Angkor Realm)");
+  const [region] = useState("សៀមរាប • អង្គរវត្ត");
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleRefresh = () => {
     soundFX.playClick();
     setIsRefreshing(true);
-    setTimeout(() => setIsRefreshing(false), 600);
+    setTimeout(() => setIsRefreshing(false), 500);
   };
 
   return (
     <aside
       style={{
         position: "absolute",
-        left: 28,
-        top: 76,
-        bottom: 36,
-        width: 360,
+        left: "max(14px, env(safe-area-inset-left))",
+        top: "max(44px, calc(env(safe-area-inset-top) + 38px))",
+        bottom: "max(12px, env(safe-area-inset-bottom))",
+        width: "clamp(240px, 32vw, 290px)",
         zIndex: 25,
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
+        gap: 8,
         pointerEvents: "auto",
       }}
     >
-      {/* Stone & Metal Frame Box */}
+      {/* Stone & Metal Frame Box with Scroll for Mobile Horizontal */}
       <div
         style={{
+          flex: 1,
           background: "linear-gradient(180deg, rgba(14, 20, 31, 0.94) 0%, rgba(9, 13, 22, 0.96) 100%)",
           border: "1.5px solid rgba(80, 100, 130, 0.45)",
           borderRadius: 8,
-          boxShadow: "0 16px 40px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(0, 0, 0, 0.6)",
-          padding: "16px 18px",
+          boxShadow: "0 12px 30px rgba(0, 0, 0, 0.8), inset 0 0 16px rgba(0, 0, 0, 0.6)",
+          padding: "10px 12px",
           display: "flex",
           flexDirection: "column",
-          gap: 16,
+          gap: 8,
           backdropFilter: "blur(10px)",
+          overflowY: "auto",
         }}
       >
         {/* Section 1: Region & Characters Count */}
@@ -63,40 +66,40 @@ export function CharacterSlotPanel({
             justifyContent: "space-between",
             alignItems: "flex-end",
             borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
-            paddingBottom: 12,
+            paddingBottom: 6,
           }}
         >
           {/* Region selector */}
           <div>
             <div
               style={{
-                fontSize: 10,
+                fontSize: 9,
                 color: "#64748b",
                 fontWeight: 800,
-                letterSpacing: 1.2,
+                letterSpacing: 1,
                 textTransform: "uppercase",
-                marginBottom: 4,
+                marginBottom: 2,
               }}
             >
-              តំបន់ (REGION)
+              REGION
             </div>
             <div
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                gap: 6,
-                padding: "4px 10px",
+                gap: 5,
+                padding: "2px 8px",
                 borderRadius: 4,
                 background: "rgba(255, 255, 255, 0.04)",
                 border: "1px solid rgba(255, 255, 255, 0.12)",
-                fontSize: 12,
+                fontSize: 11,
                 color: "#e2e8f0",
                 fontWeight: 700,
               }}
             >
-              <Signal size={12} color="#10b981" />
+              <Signal size={10} color="#10b981" />
               <span>{region}</span>
-              <span style={{ fontSize: 9, color: "#94a3b8" }}>▾</span>
+              <span style={{ fontSize: 8, color: "#94a3b8" }}>▾</span>
             </div>
           </div>
 
@@ -104,17 +107,17 @@ export function CharacterSlotPanel({
           <div style={{ textAlign: "right" }}>
             <div
               style={{
-                fontSize: 10,
+                fontSize: 9,
                 color: "#64748b",
                 fontWeight: 800,
-                letterSpacing: 1,
+                letterSpacing: 0.8,
                 textTransform: "uppercase",
-                marginBottom: 4,
+                marginBottom: 2,
               }}
             >
               CHARACTERS:
             </div>
-            <div style={{ fontSize: 13, fontWeight: 900, color: "#fbbf24" }}>
+            <div style={{ fontSize: 12, fontWeight: 900, color: "#fbbf24" }}>
               {characters.length} / 5
             </div>
           </div>
@@ -124,18 +127,18 @@ export function CharacterSlotPanel({
         <div>
           <div
             style={{
-              fontSize: 10,
+              fontSize: 9,
               color: "#64748b",
               fontWeight: 800,
-              letterSpacing: 1.2,
+              letterSpacing: 1,
               textTransform: "uppercase",
-              marginBottom: 10,
+              marginBottom: 6,
             }}
           >
             CHARACTERS
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {characters.map((char, index) => {
               const isSelected = char.id === selectedId;
               const level = 60 - index * 5;
@@ -152,37 +155,38 @@ export function CharacterSlotPanel({
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
-                    padding: "10px 12px",
+                    padding: "7px 9px",
                     borderRadius: 6,
                     cursor: "pointer",
                     transition: "all 0.15s ease",
                     background: isSelected
-                      ? "linear-gradient(90deg, rgba(30, 58, 102, 0.7) 0%, rgba(15, 28, 48, 0.5) 100%)"
+                      ? "linear-gradient(90deg, rgba(30, 58, 102, 0.75) 0%, rgba(15, 28, 48, 0.6) 100%)"
                       : "rgba(255, 255, 255, 0.03)",
                     border: isSelected
                       ? "1px solid #38bdf8"
                       : "1px solid rgba(255, 255, 255, 0.08)",
                     boxShadow: isSelected
-                      ? "0 0 16px rgba(56, 189, 248, 0.25)"
+                      ? "0 0 12px rgba(56, 189, 248, 0.25)"
                       : "none",
                   }}
                 >
-                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
                     {/* Diamond Level Badge */}
                     <div
                       style={{
-                        width: 32,
-                        height: 32,
+                        width: 26,
+                        height: 26,
                         position: "relative",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
+                        flexShrink: 0,
                       }}
                     >
                       <div
                         style={{
                           position: "absolute",
-                          inset: 2,
+                          inset: 1,
                           background: isSelected ? "#0284c7" : "rgba(255, 255, 255, 0.1)",
                           border: isSelected ? "1px solid #7dd3fc" : "1px solid rgba(255, 255, 255, 0.2)",
                           transform: "rotate(45deg)",
@@ -191,7 +195,7 @@ export function CharacterSlotPanel({
                       <span
                         style={{
                           position: "relative",
-                          fontSize: 12,
+                          fontSize: 10,
                           fontWeight: 900,
                           color: "#ffffff",
                         }}
@@ -204,17 +208,17 @@ export function CharacterSlotPanel({
                     <div>
                       <div
                         style={{
-                          fontSize: 14,
+                          fontSize: 12,
                           fontWeight: 800,
                           color: isSelected ? "#f8fafc" : "#cbd5e1",
-                          lineHeight: 1.2,
+                          lineHeight: 1.1,
                         }}
                       >
                         {char.nameKm}
                       </div>
                       <div
                         style={{
-                          fontSize: 11,
+                          fontSize: 10,
                           color: isSelected ? "#93c5fd" : "#64748b",
                           fontWeight: 600,
                         }}
@@ -225,7 +229,7 @@ export function CharacterSlotPanel({
                   </div>
 
                   <div style={{ color: "#64748b", display: "flex", alignItems: "center" }}>
-                    <MoreHorizontal size={16} />
+                    <MoreHorizontal size={14} />
                   </div>
                 </div>
               );
@@ -241,23 +245,22 @@ export function CharacterSlotPanel({
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 8,
-                padding: "10px 14px",
+                gap: 6,
+                padding: "6px 10px",
                 borderRadius: 6,
                 background: "rgba(255, 255, 255, 0.02)",
                 border: "1px dashed rgba(255, 255, 255, 0.2)",
                 color: "#94a3b8",
-                fontSize: 12,
+                fontSize: 11,
                 fontWeight: 700,
                 cursor: "pointer",
                 transition: "all 0.15s ease",
-                marginTop: 4,
               }}
             >
               <div
                 style={{
-                  width: 20,
-                  height: 20,
+                  width: 16,
+                  height: 16,
                   borderRadius: "50%",
                   border: "1px solid rgba(255, 255, 255, 0.3)",
                   display: "flex",
@@ -265,16 +268,16 @@ export function CharacterSlotPanel({
                   justifyContent: "center",
                 }}
               >
-                <Plus size={12} />
+                <Plus size={10} />
               </div>
-              <span>បង្កើតតួអង្គថ្មី (Create Character)</span>
+              <span>បង្កើតតួអង្គថ្មី</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* Bottom Action Buttons */}
-      <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
+      {/* Bottom Action Buttons (View Stages & Refresh) */}
+      <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
         <button
           onClick={() => {
             soundFX.playClick();
@@ -282,50 +285,50 @@ export function CharacterSlotPanel({
           }}
           onMouseEnter={() => soundFX.playHover()}
           style={{
-            flex: 1,
-            padding: "9px 12px",
+            flex: 1.2,
+            padding: "7px 8px",
             borderRadius: 6,
             background: "rgba(14, 20, 31, 0.9)",
             border: "1px solid rgba(80, 100, 130, 0.5)",
             color: "#e2e8f0",
-            fontSize: 12,
+            fontSize: 11,
             fontWeight: 800,
             cursor: "pointer",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            gap: 6,
+            gap: 5,
             transition: "all 0.15s ease",
-            boxShadow: "0 4px 14px rgba(0,0,0,0.5)",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.5)",
           }}
         >
-          <Globe size={14} color="#38bdf8" />
-          <span>ជ្រើសវគ្គ (View Stages)</span>
+          <Globe size={12} color="#38bdf8" />
+          <span>វគ្គ (Stages)</span>
         </button>
 
         <button
           onClick={handleRefresh}
           onMouseEnter={() => soundFX.playHover()}
           style={{
-            flex: 1,
-            padding: "9px 12px",
+            flex: 0.8,
+            padding: "7px 8px",
             borderRadius: 6,
             background: "rgba(14, 20, 31, 0.9)",
             border: "1px solid rgba(80, 100, 130, 0.5)",
             color: "#cbd5e1",
-            fontSize: 12,
+            fontSize: 11,
             fontWeight: 800,
             cursor: "pointer",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            gap: 6,
+            gap: 4,
             transition: "all 0.15s ease",
-            boxShadow: "0 4px 14px rgba(0,0,0,0.5)",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.5)",
           }}
         >
           <RefreshCw
-            size={13}
+            size={11}
             style={{
               transition: "transform 0.5s ease",
               transform: isRefreshing ? "rotate(360deg)" : "none",

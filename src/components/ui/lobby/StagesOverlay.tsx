@@ -33,14 +33,17 @@ export function StagesOverlay({
       <div
         style={{
           width: "100%",
-          maxWidth: 960,
+          maxWidth: 820,
+          maxHeight: "92vh",
           background: "linear-gradient(180deg, rgba(14, 20, 31, 0.98) 0%, rgba(8, 12, 20, 0.99) 100%)",
           border: "2px solid rgba(80, 100, 130, 0.6)",
           borderRadius: 12,
           boxShadow: "0 24px 60px rgba(0, 0, 0, 0.9), inset 0 0 30px rgba(0, 0, 0, 0.7)",
-          padding: "24px 28px",
+          padding: "16px 20px",
           color: "#f8fafc",
           position: "relative",
+          display: "flex",
+          flexDirection: "column",
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -51,15 +54,15 @@ export function StagesOverlay({
             justifyContent: "space-between",
             alignItems: "center",
             borderBottom: "1px solid rgba(255, 255, 255, 0.12)",
-            paddingBottom: 16,
-            marginBottom: 20,
+            paddingBottom: 10,
+            marginBottom: 12,
           }}
         >
           <div>
-            <div style={{ fontSize: 18, fontWeight: 900, color: "#fbbf24", letterSpacing: 1 }}>
-              ជ្រើសរើសវគ្គទេសចរណ៍ (SELECT DESTINATION & STAGE)
+            <div style={{ fontSize: 15, fontWeight: 900, color: "#fbbf24", letterSpacing: 0.8 }}>
+              ជ្រើសរើសវគ្គទេសចរណ៍ (SELECT STAGE)
             </div>
-            <div style={{ fontSize: 12, color: "#94a3b8" }}>
+            <div style={{ fontSize: 11, color: "#94a3b8" }}>
               ជ្រើសរើសតំបន់ប្រវត្តិសាស្ត្រ ឬរបៀបលេងដែលអ្នកចង់ចូលផ្សងព្រេង
             </div>
           </div>
@@ -241,3 +244,4 @@ export function StagesOverlay({
     </div>
   );
 }
+

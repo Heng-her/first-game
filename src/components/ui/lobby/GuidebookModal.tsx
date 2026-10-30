@@ -124,3 +124,4 @@ export function GuidebookModal({ onClose }: GuidebookModalProps) {
     </div>
   );
 }
+
