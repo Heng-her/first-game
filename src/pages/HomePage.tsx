@@ -1,171 +1,98 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { PageContainer } from "../components/ui/common/PageContainer";
-import { Button } from "../components/ui/common/Button";
-import { Card } from "../components/ui/common/Card";
-import { Badge } from "../components/ui/common/Badge";
-import { Play, Users, Sparkles, Compass, Shield, Award } from "lucide-react";
+import { CHARACTERS_DATA, STAGES_DATA } from "../data/gameData";
+import { TopGameBar } from "../components/ui/lobby/TopGameBar";
+import { CharacterSlotPanel } from "../components/ui/lobby/CharacterSlotPanel";
+import { CharacterShowcase } from "../components/ui/lobby/CharacterShowcase";
+import { PlayGameButton } from "../components/ui/lobby/PlayGameButton";
+import { StagesOverlay } from "../components/ui/lobby/StagesOverlay";
+import { SettingsModal } from "../components/ui/lobby/SettingsModal";
+import { GuidebookModal } from "../components/ui/lobby/GuidebookModal";
 
 export function HomePage() {
   const navigate = useNavigate();
 
+  // Selected Character & Stage state
+  const [selectedCharacterId, setSelectedCharacterId] = useState<string>(() => {
+    return localStorage.getItem("selectedCharacterId") || "khmer-male";
+  });
+  const [selectedStageId, setSelectedStageId] = useState<string>("angkor-treasure");
+
+  // Modal overlays
+  const [isStagesOpen, setIsStagesOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
+
+  // Active character
+  const activeCharacter =
+    CHARACTERS_DATA.find((c) => c.id === selectedCharacterId) || CHARACTERS_DATA[0];
+
+  const handleSelectCharacter = (id: string) => {
+    setSelectedCharacterId(id);
+    localStorage.setItem("selectedCharacterId", id);
+  };
+
+  const handlePlayGame = () => {
+    navigate(`/play?stage=${selectedStageId}&character=${selectedCharacterId}`);
+  };
+
   return (
-    <PageContainer>
-      {/* Hero Section */}
-      <section
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          textAlign: "center",
-          padding: "48px 16px 40px",
-          position: "relative",
-        }}
-      >
-        <Badge
-          variant="gold"
-          icon={<Sparkles size={14} />}
-          style={{ marginBottom: 18 }}
-        >
-          បទពិសោធន៍ទេសចរណ៍ 3D ដំបូងគេបង្អស់នៃកម្ពុជា
-        </Badge>
+    <div
+      style={{
+        position: "relative",
+        width: "100vw",
+        height: "100vh",
+        overflow: "hidden",
+        background: "radial-gradient(ellipse at 50% 40%, #1e293b 0%, #0a0e17 80%)",
+        color: "#f8fafc",
+      }}
+    >
+      {/* 1. Top Bar: [ESC] SELECT CHARACTER & Quick Utility Icons */}
+      <TopGameBar
+        title="SELECT CHARACTER"
+        subtitle="ជ្រើសរើសតួអង្គ"
+        onOpenGuide={() => setIsGuideOpen(true)}
+        onOpenSettings={() => setIsSettingsOpen(true)}
+        onExit={() => alert("អរគុណសម្រាប់ការលេង! (Thank you for playing!)")}
+      />
 
-        <h1
-          style={{
-            fontSize: "clamp(32px, 5vw, 54px)",
-            fontWeight: 900,
-            lineHeight: 1.2,
-            marginBottom: 16,
-            background: "linear-gradient(135deg, #ffffff 0%, #fbbf24 60%, #d97706 100%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            letterSpacing: "-0.5px",
+      {/* 2. Left Floating Game Panel: Region, Character Slots, Stages button */}
+      <CharacterSlotPanel
+        characters={CHARACTERS_DATA}
+        selectedId={selectedCharacterId}
+        onSelectCharacter={handleSelectCharacter}
+        onViewStages={() => setIsStagesOpen(true)}
+        onCreateNew={() => setIsGuideOpen(true)}
+      />
+
+      {/* 3. Center Screen: 3D Character Showcase & Atmosphere */}
+      <CharacterShowcase character={activeCharacter} />
+
+      {/* 4. Bottom Right: Epic Glowing [ PLAY ] Button */}
+      <PlayGameButton onClick={handlePlayGame} />
+
+      {/* 5. Stage / Destination Selection Overlay */}
+      {isStagesOpen && (
+        <StagesOverlay
+          stages={STAGES_DATA}
+          selectedStageId={selectedStageId}
+          onSelectStage={(id) => {
+            setSelectedStageId(id);
+            setIsStagesOpen(false);
           }}
-        >
-          ដំណើរផ្សងព្រេងអង្គរ និងដែនដីសុវណ្ណភូមិ
-        </h1>
+          onClose={() => setIsStagesOpen(false)}
+        />
+      )}
 
-        <p
-          style={{
-            maxWidth: 680,
-            fontSize: "clamp(15px, 2vw, 18px)",
-            color: "#94a3b8",
-            lineHeight: 1.7,
-            marginBottom: 36,
-          }}
-        >
-          ស្វែងយល់ពីប្រាង្គប្រាសាទបុរាណ វប្បធម៌ខ្មែរ ធម្មជាតិដ៏ស្រស់បំព្រង និងការរស់នៅតាមដងទន្លេ 
-          តាមរយៈការលេងហ្គេម 3D ដ៏ជក់ចិត្ត ជាមួយតួអង្គ និងយានជំនិះប្រពៃណីពិតៗ។
-        </p>
+      {/* 6. Settings Modal */}
+      {isSettingsOpen && (
+        <SettingsModal onClose={() => setIsSettingsOpen(false)} />
+      )}
 
-        {/* Action Buttons */}
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: 16,
-            justifyContent: "center",
-            marginBottom: 48,
-          }}
-        >
-          <Button
-            size="lg"
-            variant="primary"
-            icon={<Play size={20} fill="#0f172a" />}
-            onClick={() => navigate("/stages")}
-          >
-            ជ្រើសរើសវគ្គលេង (Choose Stage)
-          </Button>
-
-          <Button
-            size="lg"
-            variant="outline"
-            icon={<Users size={20} color="#fbbf24" />}
-            onClick={() => navigate("/characters")}
-          >
-            ជ្រើសរើសតួអង្គ (Select Avatar)
-          </Button>
-        </div>
-
-        {/* Feature Highlights Grid */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-            gap: 20,
-            width: "100%",
-            marginTop: 16,
-          }}
-        >
-          <Card interactive onClick={() => navigate("/stages")}>
-            <div style={{ fontSize: 36, marginBottom: 12 }}>🏛️</div>
-            <h3 style={{ fontSize: 18, fontWeight: 800, color: "#fbbf24", marginBottom: 8 }}>
-              រុករកប្រាសាទបុរាណ
-            </h3>
-            <p style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.6 }}>
-              រុករកបរិវេណប្រាសាទអង្គរវត្ត ប្រមូលកាក់មាស និងវត្ថុបុរាណដើម្បីបើកត្រាលិខិតឆ្លងដែន។
-            </p>
-          </Card>
-
-          <Card interactive onClick={() => navigate("/stages")}>
-            <div style={{ fontSize: 36, marginBottom: 12 }}>🛺</div>
-            <h3 style={{ fontSize: 18, fontWeight: 800, color: "#38bdf8", marginBottom: 8 }}>
-              បើកបរកង់បី និងទូក
-            </h3>
-            <p style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.6 }}>
-              ជិះកង់បី Tuk-Tuk តាមដងផ្លូវសៀមរាប ឬបើកទូកកម្សាន្តលើផ្ទៃទឹកបឹងទន្លេសាបដ៏ធំល្វឹងល្វើយ។
-            </p>
-          </Card>
-
-          <Card interactive onClick={() => navigate("/about")}>
-            <div style={{ fontSize: 36, marginBottom: 12 }}>📜</div>
-            <h3 style={{ fontSize: 18, fontWeight: 800, color: "#34d399", marginBottom: 8 }}>
-              UI បែបជីវិតពិត (Diegetic)
-            </h3>
-            <p style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.6 }}>
-              ប្រើប្រាស់លិខិតឆ្លងដែនទេសចរណ៍ ត្រីវិស័យបុរាណ និងផែនទីក្រដាសដូចកាន់ក្នុងដៃផ្ទាល់។
-            </p>
-          </Card>
-        </div>
-
-        {/* Quick Stats / Trust */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            flexWrap: "wrap",
-            gap: 32,
-            marginTop: 52,
-            padding: "20px 32px",
-            background: "rgba(255, 255, 255, 0.03)",
-            borderRadius: 20,
-            border: "1px solid rgba(255, 255, 255, 0.08)",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <Compass size={22} color="#fbbf24" />
-            <div style={{ textAlign: "left" }}>
-              <div style={{ fontSize: 16, fontWeight: 800, color: "#f8fafc" }}>៥+ វគ្គកម្សាន្ត</div>
-              <div style={{ fontSize: 12, color: "#64748b" }}>Angkor, Tuk-Tuk, Boat</div>
-            </div>
-          </div>
-
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <Shield size={22} color="#34d399" />
-            <div style={{ textAlign: "left" }}>
-              <div style={{ fontSize: 16, fontWeight: 800, color: "#f8fafc" }}>វប្បធម៌ខ្មែរពិត</div>
-              <div style={{ fontSize: 12, color: "#64748b" }}>Authentic Khmer Heritage</div>
-            </div>
-          </div>
-
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <Award size={22} color="#38bdf8" />
-            <div style={{ textAlign: "left" }}>
-              <div style={{ fontSize: 16, fontWeight: 800, color: "#f8fafc" }}>លេងលើ Web ភ្លាមៗ</div>
-              <div style={{ fontSize: 12, color: "#64748b" }}>No Installation Required</div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </PageContainer>
+      {/* 7. Lore / Guidebook Modal */}
+      {isGuideOpen && (
+        <GuidebookModal onClose={() => setIsGuideOpen(false)} />
+      )}
+    </div>
   );
 }

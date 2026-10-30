@@ -26,3 +26,4 @@ export interface StageOption {
   isUnlocked: boolean;
   totalCoins?: number;
 }
+

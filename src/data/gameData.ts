@@ -112,3 +112,4 @@ export const STAGES_DATA: StageOption[] = [
     isUnlocked: false,
   },
 ];
+

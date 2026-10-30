@@ -27,9 +27,14 @@ export function GamePlayPage() {
   const [isPassportOpen, setIsPassportOpen] = useState(false);
 
   useEffect(() => {
-    const savedChar = localStorage.getItem("selectedCharacterId");
-    if (savedChar) setCharacterId(savedChar);
-  }, []);
+    const charParam = searchParams.get("character");
+    if (charParam) {
+      setCharacterId(charParam);
+    } else {
+      const savedChar = localStorage.getItem("selectedCharacterId");
+      if (savedChar) setCharacterId(savedChar);
+    }
+  }, [searchParams]);
 
   const character =
     CHARACTERS_DATA.find((c) => c.id === characterId) || CHARACTERS_DATA[0];
@@ -118,9 +123,9 @@ export function GamePlayPage() {
             size="sm"
             variant="outline"
             icon={<ArrowLeft size={16} />}
-            onClick={() => navigate("/stages")}
+            onClick={() => navigate("/")}
           >
-            ចាកចេញទៅកាន់វគ្គលេង (Exit)
+            ត្រឡប់ទៅកាន់ទំព័រដើម (Exit to Lobby)
           </Button>
 
           {/* Mission Card */}
