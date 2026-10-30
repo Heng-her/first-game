@@ -34,7 +34,8 @@ export function CharacterSelectModal({
   onSelectCharacter,
 }: CharacterSelectModalProps) {
   const navigate = useNavigate();
-  const [selectedChar, setSelectedChar] = useState<CharacterOption>(getActiveCharacter());
+  const [selectedChar, setSelectedChar] =
+    useState<CharacterOption>(getActiveCharacter());
   const [autoRotate, setAutoRotate] = useState<boolean>(true);
 
   if (!isOpen) return null;
@@ -106,7 +107,8 @@ export function CharacterSelectModal({
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            background: "linear-gradient(90deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.6) 100%)",
+            background:
+              "linear-gradient(90deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.6) 100%)",
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -127,7 +129,14 @@ export function CharacterSelectModal({
             </div>
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <h2 style={{ fontSize: "20px", fontWeight: 800, color: "#f8fafc", margin: 0 }}>
+                <h2
+                  style={{
+                    fontSize: "20px",
+                    fontWeight: 800,
+                    color: "#f8fafc",
+                    margin: 0,
+                  }}
+                >
                   ជ្រើសរើសតួអង្គផ្សងព្រេង
                 </h2>
                 <Badge variant="gold">
@@ -135,7 +144,13 @@ export function CharacterSelectModal({
                   3D Avatar
                 </Badge>
               </div>
-              <p style={{ fontSize: "13px", color: "#94a3b8", margin: "2px 0 0 0" }}>
+              <p
+                style={{
+                  fontSize: "13px",
+                  color: "#94a3b8",
+                  margin: "2px 0 0 0",
+                }}
+              >
                 ជ្រើសរើសតួអង្គដែលអ្នកចូលចិត្តសម្រាប់ដំណើរកម្សាន្តទេសចរណ៍កម្ពុជា
               </p>
             </div>
@@ -196,7 +211,10 @@ export function CharacterSelectModal({
                 boxShadow: `0 8px 30px rgba(0, 0, 0, 0.5), inset 0 0 20px ${accent}15`,
               }}
             >
-              <CharacterPreview3D character={selectedChar} autoRotate={autoRotate} />
+              <CharacterPreview3D
+                character={selectedChar}
+                autoRotate={autoRotate}
+              />
 
               {/* Viewport Overlay: Character Badge */}
               <div
@@ -225,7 +243,9 @@ export function CharacterSelectModal({
                     gap: 6,
                   }}
                 >
-                  <span style={{ fontSize: 16 }}>{selectedChar.avatarIcon}</span>
+                  <span style={{ fontSize: 16 }}>
+                    {selectedChar.avatarIcon}
+                  </span>
                   {selectedChar.nameKm} ({selectedChar.nameEn})
                 </div>
                 {selectedChar.badgeKm && (
@@ -252,7 +272,9 @@ export function CharacterSelectModal({
                   position: "absolute",
                   bottom: 14,
                   right: 14,
-                  background: autoRotate ? `${accent}cc` : "rgba(15, 23, 42, 0.85)",
+                  background: autoRotate
+                    ? `${accent}cc`
+                    : "rgba(15, 23, 42, 0.85)",
                   border: `1px solid ${accent}`,
                   color: autoRotate ? "#0f172a" : "#cbd5e1",
                   borderRadius: "10px",
@@ -267,7 +289,12 @@ export function CharacterSelectModal({
                   boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4)",
                 }}
               >
-                <RotateCw size={13} style={{ animation: autoRotate ? "spin 3s linear infinite" : "none" }} />
+                <RotateCw
+                  size={13}
+                  style={{
+                    animation: autoRotate ? "spin 3s linear infinite" : "none",
+                  }}
+                />
                 {autoRotate ? "បង្វិលសកម្ម" : "បង្វិលស្ងៀម"}
               </button>
             </div>
@@ -290,7 +317,9 @@ export function CharacterSelectModal({
           </div>
 
           {/* Right Column: Character Selection Cards & Stats */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "20px" }}
+          >
             {/* 1. Character Choice Cards (Active State System) */}
             <div>
               <div
@@ -427,31 +456,76 @@ export function CharacterSelectModal({
             >
               {/* Description */}
               <div>
-                <div style={{ fontSize: "14px", fontWeight: 700, color: "#f8fafc", marginBottom: 4 }}>
+                <div
+                  style={{
+                    fontSize: "14px",
+                    fontWeight: 700,
+                    color: "#f8fafc",
+                    marginBottom: 4,
+                  }}
+                >
                   {selectedChar.nameKm} — {selectedChar.roleKm}
                 </div>
-                <p style={{ fontSize: "13px", color: "#94a3b8", lineHeight: 1.5, margin: 0 }}>
+                <p
+                  style={{
+                    fontSize: "13px",
+                    color: "#94a3b8",
+                    lineHeight: 1.5,
+                    margin: 0,
+                  }}
+                >
                   {selectedChar.descriptionKm}
                 </p>
               </div>
 
               {/* Stats Progress Bars */}
               {selectedChar.stats && (
-                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "10px",
+                  }}
+                >
                   {/* Speed */}
                   <div>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#cbd5e1", marginBottom: 4 }}>
-                      <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        fontSize: "12px",
+                        color: "#cbd5e1",
+                        marginBottom: 4,
+                      }}
+                    >
+                      <span
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 5,
+                        }}
+                      >
                         <Zap size={13} color="#f59e0b" /> ល្បឿនរត់ (Speed)
                       </span>
-                      <strong style={{ color: "#f59e0b" }}>{selectedChar.stats.speed}%</strong>
+                      <strong style={{ color: "#f59e0b" }}>
+                        {selectedChar.stats.speed}%
+                      </strong>
                     </div>
-                    <div style={{ width: "100%", height: 6, background: "rgba(255, 255, 255, 0.1)", borderRadius: 3, overflow: "hidden" }}>
+                    <div
+                      style={{
+                        width: "100%",
+                        height: 6,
+                        background: "rgba(255, 255, 255, 0.1)",
+                        borderRadius: 3,
+                        overflow: "hidden",
+                      }}
+                    >
                       <div
                         style={{
                           width: `${selectedChar.stats.speed}%`,
                           height: "100%",
-                          background: "linear-gradient(90deg, #f59e0b, #fbbf24)",
+                          background:
+                            "linear-gradient(90deg, #f59e0b, #fbbf24)",
                           borderRadius: 3,
                           transition: "width 0.4s ease",
                         }}
@@ -461,18 +535,43 @@ export function CharacterSelectModal({
 
                   {/* Stamina */}
                   <div>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#cbd5e1", marginBottom: 4 }}>
-                      <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        fontSize: "12px",
+                        color: "#cbd5e1",
+                        marginBottom: 4,
+                      }}
+                    >
+                      <span
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 5,
+                        }}
+                      >
                         <Shield size={13} color="#10b981" /> ថាមពលធន់ (Stamina)
                       </span>
-                      <strong style={{ color: "#10b981" }}>{selectedChar.stats.stamina}%</strong>
+                      <strong style={{ color: "#10b981" }}>
+                        {selectedChar.stats.stamina}%
+                      </strong>
                     </div>
-                    <div style={{ width: "100%", height: 6, background: "rgba(255, 255, 255, 0.1)", borderRadius: 3, overflow: "hidden" }}>
+                    <div
+                      style={{
+                        width: "100%",
+                        height: 6,
+                        background: "rgba(255, 255, 255, 0.1)",
+                        borderRadius: 3,
+                        overflow: "hidden",
+                      }}
+                    >
                       <div
                         style={{
                           width: `${selectedChar.stats.stamina}%`,
                           height: "100%",
-                          background: "linear-gradient(90deg, #10b981, #34d399)",
+                          background:
+                            "linear-gradient(90deg, #10b981, #34d399)",
                           borderRadius: 3,
                           transition: "width 0.4s ease",
                         }}
@@ -482,18 +581,44 @@ export function CharacterSelectModal({
 
                   {/* Knowledge */}
                   <div>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#cbd5e1", marginBottom: 4 }}>
-                      <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                        <BookOpen size={13} color="#06b6d4" /> ចំណេះដឹងតំបន់ (Knowledge)
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        fontSize: "12px",
+                        color: "#cbd5e1",
+                        marginBottom: 4,
+                      }}
+                    >
+                      <span
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 5,
+                        }}
+                      >
+                        <BookOpen size={13} color="#06b6d4" /> ចំណេះដឹងតំបន់
+                        (Knowledge)
                       </span>
-                      <strong style={{ color: "#06b6d4" }}>{selectedChar.stats.knowledge}%</strong>
+                      <strong style={{ color: "#06b6d4" }}>
+                        {selectedChar.stats.knowledge}%
+                      </strong>
                     </div>
-                    <div style={{ width: "100%", height: 6, background: "rgba(255, 255, 255, 0.1)", borderRadius: 3, overflow: "hidden" }}>
+                    <div
+                      style={{
+                        width: "100%",
+                        height: 6,
+                        background: "rgba(255, 255, 255, 0.1)",
+                        borderRadius: 3,
+                        overflow: "hidden",
+                      }}
+                    >
                       <div
                         style={{
                           width: `${selectedChar.stats.knowledge}%`,
                           height: "100%",
-                          background: "linear-gradient(90deg, #06b6d4, #38bdf8)",
+                          background:
+                            "linear-gradient(90deg, #06b6d4, #38bdf8)",
                           borderRadius: 3,
                           transition: "width 0.4s ease",
                         }}
@@ -504,7 +629,14 @@ export function CharacterSelectModal({
               )}
 
               {/* Distinctive Features / Perks Chips */}
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginTop: 4 }}>
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: "6px",
+                  marginTop: 4,
+                }}
+              >
                 {selectedChar.features.map((feat: string, idx: number) => (
                   <span
                     key={idx}
@@ -545,7 +677,8 @@ export function CharacterSelectModal({
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontSize: 13, color: "#94a3b8" }}>តួអង្គសកម្ម៖</span>
             <span style={{ fontSize: 14, fontWeight: 700, color: accent }}>
-              {selectedChar.avatarIcon} {selectedChar.nameKm} ({selectedChar.roleKm})
+              {selectedChar.avatarIcon} {selectedChar.nameKm} (
+              {selectedChar.roleKm})
             </span>
           </div>
 
