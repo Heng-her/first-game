@@ -9,6 +9,15 @@ export interface CharacterOption {
   avatarIcon: string;
   modelPath: string;
   features: string[];
+  badgeKm?: string;
+  badgeEn?: string;
+  accentColor?: string;
+  stats?: {
+    speed: number;
+    stamina: number;
+    knowledge: number;
+  };
+  isUnlocked?: boolean;
 }
 
 export interface StageOption {

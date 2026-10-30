@@ -1,12 +1,15 @@
 import { NavLink, Link } from "react-router-dom";
-import { Compass, Users, MapPin, Info, Play } from "lucide-react";
+import { Compass, Play, MapPin, User } from "lucide-react";
 
-export function Navbar() {
+interface NavbarProps {
+  onOpenCharacterModal?: () => void;
+}
+
+export function Navbar({ onOpenCharacterModal }: NavbarProps) {
   const navItems = [
     { to: "/", label: "ទំព័រដើម", labelEn: "Home", icon: <Compass size={17} /> },
-    { to: "/characters", label: "ជ្រើសតួអង្គ", labelEn: "Characters", icon: <Users size={17} /> },
-    { to: "/stages", label: "ជ្រើសវគ្គលេង", labelEn: "Stages", icon: <MapPin size={17} /> },
-    { to: "/about", label: "អំពីគម្រោង", labelEn: "About", icon: <Info size={17} /> },
+    { to: "/roads", label: "ប្លង់ក្រុង 3D", labelEn: "3D City", icon: <MapPin size={17} /> },
+    { to: "/play", label: "ចាប់ផ្តើមលេង", labelEn: "Play", icon: <Play size={17} /> },
   ];
 
   return (
@@ -116,6 +119,29 @@ export function Navbar() {
               <span>{item.label}</span>
             </NavLink>
           ))}
+
+          {onOpenCharacterModal && (
+            <button
+              onClick={onOpenCharacterModal}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "8px 14px",
+                borderRadius: 12,
+                fontSize: 14,
+                fontWeight: 700,
+                background: "rgba(245, 158, 11, 0.1)",
+                color: "#f59e0b",
+                border: "1px solid rgba(245, 158, 11, 0.3)",
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+              }}
+            >
+              <User size={16} />
+              <span>តួអង្គ</span>
+            </button>
+          )}
         </nav>
 
         {/* Quick Play CTA Button */}
