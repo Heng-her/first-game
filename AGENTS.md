@@ -15,6 +15,7 @@ This file defines the agent's working rules and product direction. It is not a r
 Treat each mode as a distinct gameplay module that shares the same player profile, progression, rewards, UI design system, and world/destination data where appropriate.
 
 ### A. Treasure Hunt and Coin Collection
+
 - Players explore a clearly bounded destination or level.
 - Place collectible coins, clues, artifacts, and optional hidden rewards.
 - Provide a quest objective, progress counter, and clear completion feedback.
@@ -24,6 +25,7 @@ Treat each mode as a distinct gameplay module that shares the same player profil
 - Support level boundaries, checkpoints, respawning, and quest completion states.
 
 ### B. Running and Exploration
+
 - Allow players to run or walk through defined environments.
 - Example environments: temple grounds, town streets, jungle trails, parks, and nature paths.
 - Include movement controls, collision, camera behavior, and simple environmental interaction.
@@ -31,6 +33,7 @@ Treat each mode as a distinct gameplay module that shares the same player profil
 - Do not imply that a simplified game map is an exact real-world navigation tool.
 
 ### C. Tuk-Tuk / Remork Driving
+
 - Let players ride a Cambodian tuk-tuk/remork along designed roads.
 - Include steering, acceleration, braking, camera follow, collision, and route checkpoints.
 - Add tourism-themed missions such as reaching a landmark, collecting tokens, or completing a scenic route.
@@ -38,6 +41,7 @@ Treat each mode as a distinct gameplay module that shares the same player profil
 - Respect local visual context and avoid presenting fictional roads or traffic rules as authoritative travel guidance.
 
 ### D. Boat Exploration
+
 - Let players travel by boat along a river, lake, or coastline.
 - Support steering, speed control, shoreline boundaries, checkpoints, and collectibles.
 - Design separate environment presets for rivers, lakes, and coastal areas.
@@ -45,6 +49,7 @@ Treat each mode as a distinct gameplay module that shares the same player profil
 - Keep water effects and environmental assets performant on common devices.
 
 ### E. Forest and Nature Trail
+
 - Let players run or explore through forest paths and natural areas.
 - Use varied vegetation, trees, flowers, rocks, water, wildlife, and trail markers.
 - Provide exploration objectives, nature discoveries, collectible items, or simple educational facts.
@@ -52,6 +57,7 @@ Treat each mode as a distinct gameplay module that shares the same player profil
 - Use factual, reviewed content for real species or environmental claims.
 
 ### F. Cooking Lessons and Courses
+
 - Create a course-based cooking activity inspired by local cuisine.
 - Organize lessons into courses, lessons, steps, ingredients, and completion states.
 - Example flow: choose a course → select a dish → review ingredients → follow preparation steps → complete a simple timed or interactive task → receive feedback and a badge.
@@ -63,6 +69,7 @@ Treat each mode as a distinct gameplay module that shares the same player profil
 ## 3. Shared Game Systems
 
 Prefer reusable systems that multiple modes can use:
+
 - Player profile and local/session progress.
 - Input mapping for keyboard, mouse, and touch.
 - Third-person or first-person camera controller, selected to fit the mode.
@@ -117,25 +124,30 @@ Do not force all modes to share identical controls or camera behavior. Reuse com
 For every task, follow this sequence:
 
 ### Step 1 — Read-only audit
+
 - Inspect project structure and current implementation.
 - Identify relevant routes, scenes, components, types, assets, and tests.
 - Search for duplicate or reusable functionality.
 - Check existing conventions and dependencies.
 
 ### Step 2 — Classify the change
+
 State which approach applies:
+
 - **REUSE EXISTING**
 - **EXTEND EXISTING**
 - **REFACTOR EXISTING**
 - **CREATE NEW**
 
 ### Step 3 — Plan a small change
+
 - Restate the requested outcome.
 - List the smallest set of files/modules likely to change.
 - Identify dependencies, risks, and how the result will be verified.
 - Ask a concise question and stop if a key requirement is ambiguous or conflicts with existing architecture.
 
 ### Step 4 — Implement incrementally
+
 - Work on one mode or one gameplay loop at a time.
 - Prefer a small playable vertical slice over many unfinished screens.
 - Do not generate every mode in one pass unless explicitly requested.
@@ -143,12 +155,16 @@ State which approach applies:
 - Preserve existing behavior unless the task explicitly changes it.
 
 ### Step 5 — Verify
+
 Run the relevant available checks, such as type checking, linting, unit tests, and production build. For 3D behavior, also verify scene loading, movement, collision/interactions, restart/exit, resizing, and keyboard/touch input where feasible.
+
 - Do not claim a check passed unless it was actually run.
 - If a check cannot be run, report why and what remains unverified.
 
 ### Step 6 — Report
+
 Always provide a concise before/after report:
+
 - **Changed:** files and behavior changed.
 - **Reused:** existing components/systems reused.
 - **New:** new modules/assets/dependencies, if any.
@@ -170,6 +186,7 @@ Always provide a concise before/after report:
 ## 8. Recommended Build Order
 
 Do not build all modes at once. Use this order unless the user requests another:
+
 1. A small 3D destination hub with movement, camera, and a return/menu flow.
 2. One complete treasure-hunt loop: objective → explore → collect → progress feedback → completion/retry.
 3. Reusable level and collectible data structures.
@@ -185,6 +202,7 @@ Each mode should have a clear “minimum playable version” before adding polis
 ## 9. Definition of Done
 
 A feature is complete only when:
+
 - The requested interaction works, not just its visual representation.
 - Controls and instructions are clear.
 - Success, failure, restart, and exit states are handled where relevant.
@@ -203,6 +221,7 @@ A feature is complete only when:
 ដើម្បីធានាថាក្រាហ្វិក UI និងទ្រព្យសម្បត្តិ 3D (3D Assets) មានរូបរាងស្អាត និងរស់រវើកដូចជីវិតពិត ត្រូវអនុវត្តតាមគោលការណ៍បច្ចេកវិទ្យាដូចខាងក្រោម៖
 
 ### ក. ការបង្កើត 3D Asset & Diegetic UI ដោយស្វ័យប្រវត្តិតាមរយៈ Blender Python API (`bpy`)
+
 1. **ស្វ័យប្រវត្តិកម្មកូដ (Procedural Scripting):**
    - ប្រើប្រាស់ Python Scripts (`bpy`) ក្នុងការបង្កើតម៉ូដែល 3D (តួអង្គ, យានជំនិះ Tuk-Tuk, ទូក, និង UI ដូចជីវិតពិតដូចជា កូនសៀវភៅ Passport, ត្រីវិស័យ, ផ្ទាំងកុងទ័រ)។
    - ដំណើរការ Blender ក្នុងទម្រង់ Background (Headless) តាមរយៈ Command-Line៖
@@ -214,13 +233,12 @@ A feature is complete only when:
    - កំណត់ PBR Materials, UV Mapping, និង Origin Point ឱ្យបានត្រឹមត្រូវ (Z-up ឬ Y-up តាមស្តង់ដារ Three.js) និងធ្វើ Optimization (Poly count សមរម្យសម្រាប់ WebGL)។
 
 ### ខ. ការត្រៀមខ្លួនសម្រាប់ Unreal Engine 5 (High-Fidelity & Cinematic Pipeline)
+
 1. **ស្តង់ដាររួម (Unified Standards):**
    - រក្សាខ្នាត (Unit Scale) ស្តង់ដារ៖ `1 unit = 1 meter` ឬ `1 unit = 1 cm` ឱ្យស៊ីគ្នាជាមួយទាំង Three.js និង Unreal Engine។
    - រចនារចនាសម្ព័ន្ធទិន្នន័យ (Data Schemas) សម្រាប់ Destination, Quests, និង Cooking Recipes ដោយឡែកពី Render Layer ដើម្បីអាចយក Logic ទាំងនេះទៅប្រើក្នុង Unreal Engine 5 C++ / Blueprints បានដោយផ្ទាល់។
 2. **កម្រិតក្រាហ្វិកកំពូល (Nanite & Lumen Compatibility):**
    - សម្រាប់ម៉ូដែលចម្លាក់លម្អិតកម្រិតខ្ពស់ (High-poly Sculpt) នៅក្នុង Blender ត្រូវរក្សាទុកឯកសារមេ (Master `.blend` ឬ High-res `.fbx` / `.usd`) សម្រាប់ប្រើជាមួយ Unreal Engine 5 Nanite ខណៈពេលដែល export កំណែស្រាល (`.glb`) សម្រាប់ Three.js Web Game។
-
-
 
 ## 12. ស្ថាបត្យកម្មកូដស្អាត និង Reusable Component Architecture (Clean Code & Modularity)
 
@@ -238,6 +256,7 @@ A feature is complete only when:
 ## 13. ស្តង់ដារ UI & Game Screen Flow (លំហូរផ្ទាំងបញ្ជា និងវគ្គលេង)
 
 គម្រោងត្រូវមាន Game State Flow យ៉ាងច្បាស់លាស់ដើម្បីសម្រួលដល់បទពិសោធន៍អ្នកលេង៖
+
 1. **Home Page (ទំព័រដើម):**
    - បង្ហាញចំណងជើងហ្គេម ទេសភាពស្វាគមន៍ (Hero Backdrop / Angkor visual) ប៊ូតុងចាប់ផ្តើមលេង (Start / Play Adventure) ប៊ូតុង Settings និងព័ត៌មានអំពីហ្គេម។
 2. **Character Selection (ការជ្រើសរើសតួអង្គ):**
